@@ -1,0 +1,12 @@
+/node_modules
+/dist
+/.idea
+*.env
+*.env.local
+*.env.development
+*.env.test
+*.code-workspace
+.cache/
+.DS_Store
+.env.production
+.env.staging
