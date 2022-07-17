@@ -13,7 +13,7 @@ const handleDuplicateFieldsDB = (err) => {
 };
 
 const handleValidationErrorDB = (err) => {
-  console.log(`na the error dem b dis oooooooo ${err}`);
+  console.log(`This is the error ${err}`);
   const errors = Object.values(err.errors).map((el: any) => el.message);
 
   const message = `IValidation Error: invalid input data.`;
@@ -48,9 +48,7 @@ const sendErrorDev = (err, req, res) => {
 
 const sendErrorProd = (err, req, res) => {
   // A) API
-  console.log("originalUrl", req.originalUrl);
-  if (req.originalUrl.startsWith("/api/thrindle")) {
-    console.log("III ENNNNNTTERRRREEDEDDDDD");
+  if (req.originalUrl.startsWith("/")) {
     // A) Operational, trusted error: send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
@@ -91,6 +89,9 @@ export const globalErrorHandle = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
+  console.log(err.statusCode, "statusCode");
+  console.log(err.status, "status");
+
   // if (process.env.NODE_ENV === "development") {
   //   sendErrorProd(err, req, res);
   // } else if (process.env.NODE_ENV === "production") {
@@ -107,7 +108,7 @@ export const globalErrorHandle = (err, req, res, next) => {
     error = handleJWTError();
   } else if (err.name === "TokenExpiredError") {
     error = handleJWTExpiredError();
-    console.log("error is", error);
+    console.log("The error is", error);
   }
 
   sendErrorProd(error, req, res);

@@ -19,7 +19,7 @@ let starq = http.createServer(app);
 const port = process.env.PORT || 7100;
 
 const server = starq.listen(port, () => {
-  console.log(`server running on port: ${port}`);
+  `server running on port: ${port}`;
 });
 
 process.on("uncaughtException", (err) => {

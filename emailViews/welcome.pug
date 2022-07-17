@@ -1,0 +1,74 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    link(rel="preconnect", href="https://fonts.googleapis.com")
+    link(rel="preconnect", href="https://fonts.googleapis.com")
+    link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital@1&display=swap", rel="stylesheet")
+    link(rel="preconnect", href="https://fonts.googleapis.com")
+    link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Updock&display=swap", rel="stylesheet")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Anonry Email
+  style.
+    .container {
+    margin: 0em auto;
+    font-family: 'Josefin Sans', sans-serif;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: auto;
+    text-align: justify;
+    
+    }
+    @media screen and (min-width: 768px) {
+    .container{
+    width:60%
+    }
+    }
+    .item-name {
+    width: 300px;
+    }
+    table {
+    font-family: 'Josefin Sans', sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    }
+    td,
+    th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    }
+    th {
+    font-weight: 900;
+    color: #16588f;
+    font-size: 12px;
+    
+    }
+    .total-div {
+    display: flex;
+    justify-content: flex-end;
+    }
+    img {
+    width: 200px;
+    object-fit: cover;
+    }
+    .img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    background-color: #16588f;
+    height: 150px;
+    padding:1em 0em;
+    }
+  body
+    .container
+      div(style="background-color: #fff; padding: 2em 1.5em;")
+        p Dear #{user_name},
+        p Welcome to Anonry.
+        div(style="margin-top: 2em;")
+          p Best, 
+          p Anonry.

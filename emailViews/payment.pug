@@ -1,0 +1,101 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(http-equiv='X-UA-Compatible' content='IE=edge')
+    link(rel='preconnect' href='https://fonts.googleapis.com')
+    link(rel='preconnect' href='https://fonts.googleapis.com')
+    link(rel='preconnect' href='https://fonts.gstatic.com' crossorigin='')
+    link(href='https://fonts.googleapis.com/css2?family=Josefin+Sans:ital@1&display=swap' rel='stylesheet')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Thrindle Email
+    style.
+      .container {
+      width: 700px;
+      padding: 3em 1em;
+      border: 1px solid black;
+      margin: 0em auto;
+      font-family: 'Josefin Sans', sans-serif;
+      }
+      .item-name {
+      width: 300px;
+      }
+      table {
+      font-family: 'Josefin Sans', sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      }
+      td,
+      th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+      }
+      th {
+      font-weight: 900;
+      color: #16588f;
+      font-size: 12px;
+      }
+      .total-div {
+      display: flex;
+      justify-content: flex-end;
+      }
+      img {
+      width: 200px;
+      object-fit: cover;
+      }
+      .img-container {
+      display: flex;
+      justify-content: center;
+      }
+  body
+    .container
+      .img-container
+        img(src='https://res.cloudinary.com/codeinstd/image/upload/v1627459268/Logo_Identity_iskwsm.png' alt='logo')
+      div
+        h3(style='color:#16588f') Hello #{firstName},
+        p
+          | Thanks for shopping on Thrindle.
+        h3(style='color:#16588f') Details of your order: 
+        hr
+        div
+          p
+            | Order Number: #{orderid}  
+            br
+            | Placed on: #{date}
+          h4(style='color:#16588f') Shipping Info
+          p #{shippingName}
+          | 					#{shippingAddress},
+          p
+          | 					#{shippingCity},
+          p #{shippingState}.
+          p Phone Number: #{shippingPhone}
+      hr
+      table
+        thead(style='color:#16588f,  ')
+          tr
+            th Items
+            th Qty
+            th Price
+            th Size
+            th Color
+        tbody
+        each n in products
+          tr
+            td.item-name #{n.productName}
+            td #{n.quantity}
+            td ₦#{n.price}
+            td #{n.size}
+            td #{n.color}
+      hr
+      section.total-div
+        div
+          p Subtotal : ₦#{subtotal}
+          p Shipping & Handling : ₦#{shippingPrice}
+          p Grand Total : ₦#{grandTotal}
+      div
+        p(style='margin-top: 4em')
+          strong(style='color:#16588f') Best Regards
+          | , 
+          br
+          i Thrindle Customer Support
