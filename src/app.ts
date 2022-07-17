@@ -24,7 +24,7 @@ app.set("view engine", "pug");
 app.options("*", (cors as any)());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript Server");
+  res.send("Welcome to Anonry");
 });
 
 app.use("/", mainRoutes);
