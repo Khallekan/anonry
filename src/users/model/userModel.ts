@@ -1,4 +1,4 @@
-import { hash } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import { createHash } from "crypto";
 import { Schema, model } from "mongoose";
 import isEmail from "validator/lib/isEmail";
@@ -46,11 +46,32 @@ const userSchema = new Schema<IUser>(
     },
     otpToken: {
       type: String,
-      select: false,
     },
     otpExpires: {
       type: Date,
-      select: false,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleted_at: {
+      type: Date,
+    },
+    suspended: {
+      type: Boolean,
+    },
+    suspended_at: {
+      type: Date,
+    },
+    suspended_reason: {
+      type: String,
+    },
+    suspended_till: {
+      type: Date,
+    },
+    deactivated: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
@@ -65,8 +86,6 @@ userSchema.methods.createOTP = function () {
 
   this.otpToken = createHash("sha256").update(OTP).digest("hex");
   this.otpExpires = Date.now() + 10 * 60 * 1000;
-  console.log(this.otpToken, "OTP TOKENNNN");
-  console.log(this.otpExpires, "OTP EXPIRESSSS");
 
   return OTP;
 };
@@ -104,18 +123,21 @@ userSchema.methods.validateOTP = function (
   //compare function returns true or false that can be accessed in any file where the buyerSchema has been imported
   if (createHash("sha256").update(candidateToken).digest("hex") === token) {
     this.otpToken = undefined;
-
     this.otpExpires = undefined;
-
     if (type === "accountVerify") {
       this.status = "verified";
       this.verified = true;
     }
-
     return true;
   }
-
   return false;
+};
+
+userSchema.methods.validatePassword = async function (
+  candidatePassword: string
+) {
+  //compare function returns true or false that can be accessed in any file where the buyerSchema has been imported
+  return await compare(candidatePassword, this.password);
 };
 
 export default model<IUser>("user", userSchema);
