@@ -13,7 +13,12 @@ import { generateToken } from "../../../utils/generateToken";
 export const createUser = catchControllerAsyncs(
   async (req: Request, res: Response, next: NextFunction) => {
     // make sure user_name, email and password fields are passed in the req.body
-    if (!req.body.user_name || !req.body.email || !req.body.password) {
+    if (
+      !req.body.user_name ||
+      !req.body.email ||
+      !req.body.password ||
+      !req.body.link
+    ) {
       return res.status(400).json({
         status: "fail",
         message: "Please make sure you pass all the required fields",
@@ -23,6 +28,7 @@ export const createUser = catchControllerAsyncs(
     const email: string = req.body.email.trim();
     const password: string = req.body.password;
     const role: string = "user";
+    const link: string = req.body.link;
     // make sure password is at least 8 characters long and contains a number a lowercase letter and an uppercase letter
     if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
       return res.status(400).json({
@@ -85,7 +91,7 @@ export const createUser = catchControllerAsyncs(
 
     const message: string = `Use this code to verify your account`;
     // send OTP to user's email
-    sendOTP(user_name, email, message, otp);
+    sendOTP(user_name, email, message, otp, link);
 
     await user.save();
 
@@ -227,7 +233,8 @@ export const login = catchControllerAsyncs(
 export const resendOTP = catchControllerAsyncs(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
-    if (!email) {
+    const link: string = req.body.link;
+    if (!email || !link) {
       return res.status(400).json({
         status: "fail",
         message: "Please make sure you pass all the required fields",
@@ -250,7 +257,7 @@ export const resendOTP = catchControllerAsyncs(
 
     const message: string = `Use this code to verify your account`;
     // send OTP to user's email
-    sendOTP(user.user_name, email, message, otp);
+    sendOTP(user.user_name, email, message, otp, link);
 
     await user.save();
 
@@ -264,6 +271,7 @@ export const resendOTP = catchControllerAsyncs(
 export const forgotPassword = catchControllerAsyncs(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
+    const link: string = req.body.link;
     if (!email) {
       return res.status(400).json({
         status: "fail",
@@ -288,7 +296,7 @@ export const forgotPassword = catchControllerAsyncs(
     const message: string = `Click the button to reset your password`;
 
     // send OTP to user's email
-    sendPasswordResetLink(user.user_name, email, message, otp);
+    sendPasswordResetLink(user.user_name, email, message, otp, link);
 
     await user.save();
 

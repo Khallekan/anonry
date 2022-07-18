@@ -14,7 +14,8 @@ export const sendOTP = async (
   user_name: string,
   email: string,
   message: string,
-  otp: string
+  otp: string,
+  link: string
 ) =>
   // eslint-disable-next-line consistent-return
   {
@@ -26,7 +27,7 @@ export const sendOTP = async (
           subject:
             "Welcome to Anonry. Glad to have you on board. We just need to verify your email",
           message,
-          link: `${process.env.FRONTEND_URL}/verify-email?email=${email}`,
+          link,
           otp,
         }
       );
@@ -46,7 +47,8 @@ export const sendPasswordResetLink = async (
   user_name: string,
   email: string,
   message: string,
-  otp: string
+  otp: string,
+  link: string
 ) => {
   try {
     const html = pug.renderFile(
@@ -54,7 +56,8 @@ export const sendPasswordResetLink = async (
       {
         user_name,
         subject: "Reset your password",
-        link: `${process.env.FRONTEND_URL}/reset-password?email=${email}&otp=${otp}`,
+        link,
+        otp,
         message,
       }
     );
