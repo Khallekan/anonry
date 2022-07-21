@@ -295,10 +295,9 @@ export const forgotPassword = catchControllerAsyncs(
 
     const message: string = `Click the button to reset your password`;
 
-    // send OTP to user's email
-    sendPasswordResetLink(user.user_name, email, message, otp, link);
-
     await user.save();
+    // send OTP to user's email
+    await sendPasswordResetLink(user.user_name, email, message, otp, link);
 
     return res.status(200).json({
       status: "success",

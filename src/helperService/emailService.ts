@@ -105,9 +105,9 @@ export const sendLoginEmail = async (
   message: string
 ) => {
   console.log("sendLoginEmail");
-  
-  console.log({user_name, email, message});
-  
+
+  console.log({ user_name, email, message });
+
   try {
     const html = pug.renderFile(
       path.join(__dirname, "../../emailViews/", "loginEmail.pug"),

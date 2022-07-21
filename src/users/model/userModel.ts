@@ -40,7 +40,10 @@ const userSchema = new Schema<IUser>(
     },
     status: {
       type: String,
-      //unveriified is the default state a user's  account is in before he verifies his email then it becomes verified, suspended is when admn deactivates temporarily a user's account for any flouting of rules, deteled is when the user deactivates his/her account personally and he/she can reactivate it back to unverified thereby needing to verify email again. takenDown is when admin permanently deactivates a user's account
+      //unveriified is the default state a user's  account is in before he verifies his email then it becomes verified
+      //suspended is when admn deactivates temporarily a user's account for any flouting of rules
+      //deteled is when the user deactivates their account personally and they can reactivate it back to unverified thereby needing to verify email again
+      //takenDown is when admin permanently deactivates a user's account
       enum: ["verified", "unverified", "suspended", "deleted", "takenDown"],
       default: "unverified",
     },
