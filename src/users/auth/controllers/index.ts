@@ -272,7 +272,7 @@ export const forgotPassword = catchControllerAsyncs(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
     const link: string = req.body.link;
-    if (!email) {
+    if (!email || !link) {
       return res.status(400).json({
         status: "fail",
         message: "Please make sure you pass all the required fields",
@@ -297,7 +297,9 @@ export const forgotPassword = catchControllerAsyncs(
 
     await user.save();
     // send OTP to user's email
-    await sendPasswordResetLink(user.user_name, email, message, otp, link);
+    const mailStatus = await sendPasswordResetLink(user.user_name, email, message, otp, link);
+    
+    console.log({mailStatus});
 
     return res.status(200).json({
       status: "success",
