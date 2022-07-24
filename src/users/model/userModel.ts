@@ -76,6 +76,37 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    deactivated_at: {
+      type: Date,
+    },
+    no_of_likes: {
+      type: Number,
+      default: 0,
+    },
+    no_of_dislikes: {
+      type: Number,
+      default: 0,
+    },
+    no_of_comments: {
+      type: Number,
+      default: 0,
+    },
+    no_of_published_entries: {
+      type: Number,
+      default: 0,
+    },
+    no_of_notes: {
+      type: Number,
+      default: 0,
+    },
+    no_of_entries: {
+      type: Number,
+      default: 0,
+    },
+    no_of_drafts: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

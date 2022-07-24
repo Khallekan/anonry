@@ -17,6 +17,14 @@ export interface IUser extends Document {
   suspended_reason: string;
   suspended_till: Date;
   deactivated: boolean;
+  deactivated_at: Date;
+  no_of_likes: number;
+  no_of_dislikes: number;
+  no_of_comments: number;
+  no_of_published_entries: number;
+  no_of_notes: number;
+  no_of_entries: number;
+  no_of_drafts: number;
   createOTP(): string;
   validateOTP(candidateToken: string, token: string, type: string): boolean;
   validatePassword(candidatePassword: string): boolean;
