@@ -6,6 +6,7 @@ export interface IUser extends Document {
   created_at: Date;
   updated_at: Date;
   role: string;
+  avatar: string;
   verified: boolean;
   status: string;
   otpToken: string;

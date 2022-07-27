@@ -34,6 +34,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "admin"],
     },
+    avatar: {
+      type: String,
+    },
     verified: {
       type: Boolean,
       default: false,

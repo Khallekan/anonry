@@ -9,6 +9,7 @@ import {
   sendPasswordResetLink,
 } from "../../../helperService/emailService";
 import { generateToken } from "../../../utils/generateToken";
+import { StatusCodes } from "http-status-codes";
 
 export const createUser = catchControllerAsyncs(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -19,9 +20,11 @@ export const createUser = catchControllerAsyncs(
       !req.body.password ||
       !req.body.link
     ) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     const user_name: string = req.body.user_name.trim();
@@ -31,24 +34,30 @@ export const createUser = catchControllerAsyncs(
     const link: string = req.body.link;
     // make sure password is at least 8 characters long and contains a number a lowercase letter and an uppercase letter
     if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
-      return res.status(400).json({
-        status: "fail",
-        message:
-          "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message:
+            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+        },
       });
     }
     // make sure user_name is at least 5 characters long
     if (user_name.length < 5) {
-      return res.status(400).json({
-        status: "fail",
-        message: "User name must be at least 5 characters long",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "User name must be at least 5 characters long",
+        },
       });
     }
     // make sure email is valid
     if (!isEmail(email)) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass a valid email",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass a valid email",
+        },
       });
     }
 
@@ -58,9 +67,11 @@ export const createUser = catchControllerAsyncs(
         email,
       });
       if (existingUserEmail) {
-        return res.status(409).json({
-          status: "fail",
-          message: `User with email: ${email} already exists`,
+        return res.status(StatusCodes.CONFLICT).json({
+          data: {
+            status: StatusCodes.CONFLICT,
+            message: `User with email: ${email} already exists`,
+          },
         });
       }
     }
@@ -71,9 +82,11 @@ export const createUser = catchControllerAsyncs(
         user_name,
       });
       if (existingUserName) {
-        return res.status(409).json({
-          status: "fail",
-          message: `User with user name: ${user_name} already exists`,
+        return res.status(StatusCodes.CONFLICT).json({
+          data: {
+            status: StatusCodes.CONFLICT,
+            message: `User with user name: ${user_name} already exists`,
+          },
         });
       }
     }
@@ -95,9 +108,11 @@ export const createUser = catchControllerAsyncs(
 
     await user.save();
 
-    return res.status(201).json({
-      status: "success",
-      message: "OTP has been sent to your email",
+    return res.status(StatusCodes.CREATED).json({
+      data: {
+        status: StatusCodes.CREATED,
+        message: "OTP has been sent to your email",
+      },
     });
   }
 );
@@ -107,9 +122,11 @@ export const verifyEmail = catchControllerAsyncs(
     const email: string = req.body.email;
     const otp: string = req.body.otp;
     if (!email || !otp) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     // find user with email
@@ -118,9 +135,11 @@ export const verifyEmail = catchControllerAsyncs(
     });
 
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User with this email does not exist",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "User with this email does not exist",
+        },
       });
     }
     // verify OTP
@@ -130,23 +149,27 @@ export const verifyEmail = catchControllerAsyncs(
       const refresh_token = generateToken(user._id, "refresh");
       const access_token = generateToken(user.id, "access");
       await user.save();
-      return res.status(200).json({
-        status: "success",
-        message: "Your email has been verified",
+      return res.status(StatusCodes.OK).json({
         data: {
-          user: {
-            user_name: user.user_name,
-            email,
+          status: StatusCodes.OK,
+          message: "Your email has been verified",
+          data: {
+            user: {
+              user_name: user.user_name,
+              email,
+            },
+            refresh_token,
+            access_token,
           },
-          refresh_token,
-          access_token,
         },
       });
     }
 
-    return res.status(400).json({
-      status: "fail",
-      message: "OTP is incorrect",
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      data: {
+        status: StatusCodes.BAD_REQUEST,
+        message: "OTP is incorrect",
+      },
     });
   }
 );
@@ -156,15 +179,19 @@ export const login = catchControllerAsyncs(
     const { identifier, password }: { identifier: string; password: string } =
       req.body;
     if (!identifier) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please provide a username or an email",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please provide a username or an email",
+        },
       });
     }
     if (!password) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Password field cannot be empty",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Password field cannot be empty",
+        },
       });
     }
     // find user with email or user_name and deleted field is false
@@ -173,17 +200,21 @@ export const login = catchControllerAsyncs(
       deleted: false,
     }).select("+password -__v");
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User with this email or username does not exist",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "User with this email or username does not exist",
+        },
       });
     }
 
     // Check if user is verified
     if (user.status !== "verified") {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please verify your email first",
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        data: {
+          status: StatusCodes.UNAUTHORIZED,
+          message: "Please verify your email first",
+        },
       });
     }
     // console.log({user})
@@ -196,16 +227,18 @@ export const login = catchControllerAsyncs(
     if (isValid) {
       const refresh_token = generateToken(user._id, "refresh");
       const access_token = generateToken(user._id, "access");
-      res.status(200).json({
-        status: "success",
-        message: "User logged in successfully",
+      res.status(StatusCodes.OK).json({
         data: {
-          user: {
-            user_name: user.user_name,
-            email: user.email,
+          status: StatusCodes.OK,
+          message: "User logged in successfully",
+          data: {
+            user: {
+              user_name: user.user_name,
+              email: user.email,
+            },
+            refresh_token,
+            access_token,
           },
-          refresh_token,
-          access_token,
         },
       });
       // Get date with time in day/month/year 24hr clock
@@ -223,9 +256,11 @@ export const login = catchControllerAsyncs(
       await sendLoginEmail(user.user_name, user.email, message);
       return;
     }
-    return res.status(400).json({
-      status: "fail",
-      message: "Password is incorrect",
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      data: {
+        status: StatusCodes.BAD_REQUEST,
+        message: "Password is incorrect",
+      },
     });
   }
 );
@@ -235,9 +270,11 @@ export const resendOTP = catchControllerAsyncs(
     const email: string = req.body.email;
     const link: string = req.body.link;
     if (!email || !link) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     // find user with email
@@ -247,9 +284,11 @@ export const resendOTP = catchControllerAsyncs(
     });
 
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User with this email does not exist",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "User with this email does not exist",
+        },
       });
     }
     // Create OTP using createOTP method
@@ -261,9 +300,11 @@ export const resendOTP = catchControllerAsyncs(
 
     await user.save();
 
-    return res.status(200).json({
-      status: "success",
-      message: "New OTP has been sent to your email",
+    return res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: "New OTP has been sent to your email",
+      },
     });
   }
 );
@@ -273,9 +314,11 @@ export const forgotPassword = catchControllerAsyncs(
     const email: string = req.body.email;
     const link: string = req.body.link;
     if (!email || !link) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     // find user with email
@@ -285,9 +328,11 @@ export const forgotPassword = catchControllerAsyncs(
     });
 
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User with this email does not exist",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "User with this email does not exist",
+        },
       });
     }
     // Create OTP using createOTP method
@@ -297,13 +342,21 @@ export const forgotPassword = catchControllerAsyncs(
 
     await user.save();
     // send OTP to user's email
-    const mailStatus = await sendPasswordResetLink(user.user_name, email, message, otp, link);
-    
-    console.log({mailStatus});
+    const mailStatus = await sendPasswordResetLink(
+      user.user_name,
+      email,
+      message,
+      otp,
+      link
+    );
 
-    return res.status(200).json({
-      status: "success",
-      message: "Your password reset details has been sent to your email",
+    console.log({ mailStatus });
+
+    return res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: "Your password reset details has been sent to your email",
+      },
     });
   }
 );
@@ -314,9 +367,11 @@ export const resetPassword = catchControllerAsyncs(
     const otp: string = req.body.otp;
     const password: string = req.body.password;
     if (!email || !otp || !password) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     // find user with email
@@ -326,17 +381,19 @@ export const resetPassword = catchControllerAsyncs(
     });
 
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        status: StatusCodes.NOT_FOUND,
         message: "User with this email does not exist",
       });
     }
 
     if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
-      return res.status(400).json({
-        status: "fail",
-        message:
-          "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message:
+            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+        },
       });
     }
 
@@ -346,9 +403,11 @@ export const resetPassword = catchControllerAsyncs(
     if (isValid) {
       user.password = password;
       await user.save();
-      res.status(200).json({
-        status: "success",
-        message: "Your password has been reset",
+      res.status(StatusCodes.OK).json({
+        data: {
+          status: StatusCodes.OK,
+          message: "Your password has been reset",
+        },
       });
       await sendPasswordChanged(
         user.user_name,
@@ -358,9 +417,11 @@ export const resetPassword = catchControllerAsyncs(
       return;
     }
 
-    return res.status(400).json({
-      status: "fail",
-      message: "OTP is incorrect",
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      data: {
+        status: StatusCodes.BAD_REQUEST,
+        message: "OTP is incorrect",
+      },
     });
   }
 );
@@ -370,9 +431,11 @@ export const updatePassword = catchControllerAsyncs(
     const user_id: string = req.body.user._id;
     const password: string = req.body.password;
     if (!user_id || !password) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please make sure you pass all the required fields",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure you pass all the required fields",
+        },
       });
     }
     // find user with user_id
@@ -382,26 +445,32 @@ export const updatePassword = catchControllerAsyncs(
     });
 
     if (!user) {
-      return res.status(404).json({
-        status: "fail",
-        message: "User with this user_id does not exist",
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "User with this user_id does not exist",
+        },
       });
     }
 
     if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
-      return res.status(400).json({
-        status: "fail",
-        message:
-          "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message:
+            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+        },
       });
     }
 
     // update user's password
     user.password = password;
     await user.save();
-    res.status(200).json({
-      status: "success",
-      message: "Your password has been updated",
+    res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: "Your password has been updated",
+      },
     });
     await sendPasswordChanged(
       user.user_name,

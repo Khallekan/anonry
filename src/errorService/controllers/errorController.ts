@@ -1,7 +1,9 @@
 import AppError from "../utils/AppErrorModule.js";
+import { StatusCodes } from "http-status-codes";
+
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
-  return new AppError(message, 400);
+  return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
 const handleDuplicateFieldsDB = (err) => {
@@ -9,7 +11,7 @@ const handleDuplicateFieldsDB = (err) => {
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
 
-  return new AppError(message, 400);
+  return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
 const handleValidationErrorDB = (err) => {
@@ -17,14 +19,17 @@ const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el: any) => el.message);
 
   const message = `IValidation Error: invalid input data.`;
-  return new AppError(message, 400);
+  return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
 const handleJWTError = () =>
-  new AppError("Invalid token. Please log in again!", 401);
+  new AppError("Invalid token. Please log in again!", StatusCodes.UNAUTHORIZED);
 
 const handleJWTExpiredError = () =>
-  new AppError("Your token has expired! Please log in again.", 401);
+  new AppError(
+    "Your token has expired! Please log in again.",
+    StatusCodes.UNAUTHORIZED
+  );
 
 const sendErrorDev = (err, req, res) => {
   console.log(req.originalUrl);
@@ -41,8 +46,11 @@ const sendErrorDev = (err, req, res) => {
   // B) RENDERED WEBSITE
   console.error("ERROR 💥", err);
   return res.status(err.statusCode).json({
-    title: err.name,
-    msg: err.message,
+    data: {
+      title: err.name,
+      message: err.message,
+      status: err.statusCode,
+    },
   });
 };
 
@@ -52,18 +60,19 @@ const sendErrorProd = (err, req, res) => {
     // A) Operational, trusted error: send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
+        data: { status: err.statusCode, message: err.message },
       });
     }
     // B) Programming or other unknown error: don't leak error details
     // 1) Log error
     console.error("ERROR 💥", err);
     // 2) Send generic message
-    return res.status(500).json({
-      status: "error",
-      title: "Something went very wrong!",
-      message: err.message,
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      data: {
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        title: "Something went very wrong!",
+        message: err.message,
+      },
     });
   }
 
@@ -71,8 +80,11 @@ const sendErrorProd = (err, req, res) => {
   // A) Operational, trusted error: send message to client
   if (err.isOperational) {
     return res.status(err.statusCode).render("error", {
-      title: "Something went wrong!",
-      msg: err.message,
+      data: {
+        title: "Something went wrong!",
+        message: err.message,
+        status: err.statusCode,
+      },
     });
   }
   // B) Programming or other unknown error: don't leak error details
@@ -80,13 +92,16 @@ const sendErrorProd = (err, req, res) => {
   console.error("ERROR 💥", err);
   // 2) Send generic message
   return res.status(err.statusCode).render("error", {
-    title: "Something went wrong!",
-    msg: "Please try again later.",
+    data: {
+      title: "Something went wrong!",
+      message: "Please try again later.",
+      status: err.statusCode,
+    },
   });
 };
 
 export const globalErrorHandle = (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
+  err.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   err.status = err.status || "error";
 
   console.log(err.statusCode, "statusCode");

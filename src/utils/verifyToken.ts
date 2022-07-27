@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
+import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import User from "../users/model/userModel";
-import ResponseStatus from "./response"
+import ResponseStatus from "./response";
 
 const response = new ResponseStatus();
 
@@ -15,7 +16,6 @@ async function verifyToken(
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      
       const token = req.headers.authorization.split(" ")[1];
 
       const decoded = <any>(
@@ -24,21 +24,32 @@ async function verifyToken(
 
       const user = await User.findById(decoded.id);
       if (!user) {
-        return response.setError(404, "User not found").send(res);
+        return response
+          .setError(StatusCodes.NOT_FOUND, "User not found")
+          .send(res);
       }
       if (user.status === "unverified") {
-        response.setError(401, "user needs to be verified");
+        response.setError(
+          StatusCodes.UNAUTHORIZED,
+          "user needs to be verified"
+        );
         return response.send(res);
       }
       req.body.user = user;
       return next();
     } catch (error) {
       console.error(error);
-      response.setError(401, "Token has expired, please login again");
+      response.setError(
+        StatusCodes.UNAUTHORIZED,
+        "Token has expired, please login again"
+      );
       return response.send(res);
     }
   } else {
-    response.setError(404, "Invalid token or token is missing");
+    response.setError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid token or token is missing"
+    );
     return response.send(res);
   }
 }
