@@ -38,22 +38,22 @@ class ResponseStatus {
 
   send(res: Response): Response {
     const result: {
-      success: boolean | null;
       data: ResponseData | null;
+      status: number | null;
       message?: string;
     } = {
-      success: this.success,
+      status: this.statusCode,
       data: this.data,
     };
     if (this.message) result.message = this.message;
     if (this.success) {
-      return res.status(this.statusCode ? this.statusCode : 200).json(result);
+      return res
+        .status(this.statusCode ? this.statusCode : 200)
+        .json({ data: result });
     }
 
     return res.status(this.statusCode ? this.statusCode : 500).json({
-      success: this.success,
-      message: this.message,
-      data: [],
+      data: { status: this.statusCode, message: this.message, data: [] },
     });
   }
 }
