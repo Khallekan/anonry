@@ -33,6 +33,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ["user", "admin"],
+      select: false,
     },
     avatar: {
       type: String,
@@ -40,6 +41,7 @@ const userSchema = new Schema<IUser>(
     verified: {
       type: Boolean,
       default: false,
+      select: false,
     },
     status: {
       type: String,
@@ -49,6 +51,7 @@ const userSchema = new Schema<IUser>(
       //takenDown is when admin permanently deactivates a user's account
       enum: ["verified", "unverified", "suspended", "deleted", "takenDown"],
       default: "unverified",
+      select: false,
     },
     otpToken: {
       type: String,
@@ -59,28 +62,36 @@ const userSchema = new Schema<IUser>(
     deleted: {
       type: Boolean,
       default: false,
+      select: false,
     },
     deleted_at: {
       type: Date,
+      select: false,
     },
     suspended: {
       type: Boolean,
+      select: false,
     },
     suspended_at: {
       type: Date,
+      select: false,
     },
     suspended_reason: {
       type: String,
+      select: false,
     },
     suspended_till: {
       type: Date,
+      select: false,
     },
     deactivated: {
       type: Boolean,
       default: false,
+      select: false,
     },
     deactivated_at: {
       type: Date,
+      select: false,
     },
     no_of_likes: {
       type: Number,
@@ -94,6 +105,10 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+    no_of_entries: {
+      type: Number,
+      default: 0,
+    },
     no_of_published_entries: {
       type: Number,
       default: 0,
@@ -102,13 +117,9 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
-    no_of_entries: {
-      type: Number,
-      default: 0,
-    },
-    no_of_drafts: {
-      type: Number,
-      default: 0,
+    updatedAt: {
+      type: Date,
+      select: false,
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }

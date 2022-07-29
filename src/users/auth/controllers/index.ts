@@ -30,7 +30,10 @@ export const createUser = catchControllerAsyncs(
     const user_name: string = req.body.user_name.trim();
     const email: string = req.body.email.trim();
     const password: string = req.body.password;
-    const role: string = "user";
+    const role = "user";
+    // generate a random whole number between 1 and 4 icluding 1 and 4
+    const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
+    const avatar = `https://robohash.org/${user_name}?set=${randomNumber}&size=500x500`;
     const link: string = req.body.link;
     // make sure password is at least 8 characters long and contains a number a lowercase letter and an uppercase letter
     if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
@@ -96,6 +99,7 @@ export const createUser = catchControllerAsyncs(
       email,
       password,
       role,
+      avatar,
     });
     // save the user
     await user.save();
@@ -198,7 +202,7 @@ export const login = catchControllerAsyncs(
     const user = await User.findOne({
       $or: [{ email: identifier.trim() }, { user_name: identifier.trim() }],
       deleted: false,
-    }).select("+password -__v");
+    }).select("+password -__v +status");
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {

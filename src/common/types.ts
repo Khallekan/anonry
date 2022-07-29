@@ -26,6 +26,8 @@ export interface IUser extends Document {
   no_of_notes: number;
   no_of_entries: number;
   no_of_drafts: number;
+  updatedAt: Date;
+  createdAt: Date;
   createOTP(): string;
   validateOTP(candidateToken: string, token: string, type: string): boolean;
   validatePassword(candidatePassword: string): boolean;
