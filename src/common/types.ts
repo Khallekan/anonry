@@ -29,6 +29,7 @@ export interface IUser extends Document {
   no_of_entries: number;
   no_of_drafts: number;
   updatedAt: Date;
+  entries: IEntry[];
   createdAt: Date;
   createOTP(): string;
   validateOTP(candidateToken: string, token: string, type: string): boolean;

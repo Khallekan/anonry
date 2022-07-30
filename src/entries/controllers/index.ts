@@ -54,7 +54,9 @@ export const editEntry = catchController(
     console.log({ user_id, entry_id, title, description });
 
     if (!entry_id || !title || !description) {
-      return resp.setError(StatusCodes.BAD_REQUEST, "All fields are required").send(res);
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "All fields are required")
+        .send(res);
     }
     const entry = await Entry.findOneAndUpdate(
       { _id: entry_id, user: user_id },
@@ -90,8 +92,15 @@ export const deleteEntry = catchController(
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found");
     }
 
+    // Update the user's no_of_entries everytime a new entry is deleted
+    const user = await User.findById(user_id);
+    if (user) {
+      user.no_of_entries = user.no_of_entries - 1;
+      user.save();
+    }
+
     return resp
-      .setSuccess(StatusCodes.NO_CONTENT, [], "Entry deleted successfully")
+      .setSuccess(StatusCodes.OK, [], "Entry deleted successfully")
       .send(res);
   }
 );
