@@ -33,6 +33,20 @@ export interface IUser extends Document {
   validatePassword(candidatePassword: string): boolean;
 }
 
+export interface IEntry {
+  title: string;
+  description: string;
+  user: string;
+  no_of_likes: number;
+  liked_by: IUser[];
+  no_of_comments: number;
+  deleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// export interface IComment
+
 export interface IUserModel extends Model<IUser> {
   createOTP(): any;
 }
