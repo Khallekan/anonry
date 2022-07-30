@@ -1,4 +1,6 @@
 import { Document, Model } from "mongoose";
+
+// User Interface
 export interface IUser extends Document {
   user_name: string;
   email: string;
@@ -33,6 +35,7 @@ export interface IUser extends Document {
   validatePassword(candidatePassword: string): boolean;
 }
 
+// Entry Interface
 export interface IEntry {
   title: string;
   description: string;
@@ -40,12 +43,22 @@ export interface IEntry {
   no_of_likes: number;
   liked_by: IUser[];
   no_of_comments: number;
+  edited: boolean;
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// export interface IComment
+// Task Interface
+export interface ITask {
+  title: string;
+  description: string;
+  status: "pending" | "active" | "completed";
+  user: string;
+  deleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface IUserModel extends Model<IUser> {
   createOTP(): any;

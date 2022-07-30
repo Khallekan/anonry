@@ -2,7 +2,7 @@ import { hash, compare } from "bcryptjs";
 import { createHash } from "crypto";
 import { Schema, model } from "mongoose";
 import isEmail from "validator/lib/isEmail";
-import { IUser, IUserModel } from "../../common/types";
+import { IUser } from "../../common/types";
 
 const userSchema = new Schema<IUser>(
   {

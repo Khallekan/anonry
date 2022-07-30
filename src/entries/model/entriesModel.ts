@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
 import { IEntry } from "../../common/types";
+import User from "../../users/model/userModel";
 
 // create mongoose schema to store blog post
-const notesSchema = new Schema<IEntry>(
+const entrySchema = new Schema<IEntry>(
   {
     title: {
       type: String,
@@ -34,12 +35,26 @@ const notesSchema = new Schema<IEntry>(
       type: Number,
       default: 0,
     },
+    edited: {
+      type: Boolean,
+      default: false,
+    },
     deleted: {
       type: Boolean,
       default: false,
+      select: false,
     },
   },
   { timestamps: true }
 );
 
-export default model<IEntry>("notes", notesSchema);
+// Update the user's no_of_entries everytime a new entry is created
+entrySchema.post("save", async function (doc) {
+  const user = await User.findById(doc.user);
+  if (user) {
+    user.no_of_entries = user.no_of_entries + 1;
+    user.save();
+  }
+});
+
+export default model<IEntry>("notes", entrySchema);
