@@ -28,7 +28,7 @@ const entrySchema = new Schema<IEntry>(
     },
     user: {
       type: String,
-      ref: "User",
+      ref: "user",
       required: [true, "Please provide a user"],
     },
     no_of_likes: {
@@ -36,7 +36,7 @@ const entrySchema = new Schema<IEntry>(
       default: 0,
     },
     liked_by: {
-      type: [{ type: Schema.Types.ObjectId, ref: "user" }],
+      type: [{ type: String, ref: "user" }],
       default: [],
     },
     no_of_comments: {
@@ -55,6 +55,14 @@ const entrySchema = new Schema<IEntry>(
   },
   { timestamps: true }
 );
+
+// populate the fields that reference other models in the database before finding
+entrySchema.pre(/^find/, function (next) {
+  this.populate("user", "-createdAt -updatedAt -__v");
+  this.populate("tags", "-createdAt -updatedAt -__v");
+  this.populate("liked_by", "-createdAt -updatedAt __v");
+  next();
+});
 
 // Update the user's no_of_entries everytime a new entry is created
 entrySchema.post("save", async function (doc) {
