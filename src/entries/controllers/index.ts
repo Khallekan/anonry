@@ -28,6 +28,7 @@ export const createEntry = catchController(
     const user_id: string = req.body.user._id;
     const title: string = req.body.title;
     const description: string = req.body.description;
+    const tag: string = req.body.tags
 
     if (!user_id || !title || !description) {
       return resp.setError(StatusCodes.BAD_REQUEST, "All fields are required");

@@ -40,6 +40,7 @@ export interface IUser extends Document {
 export interface IEntry {
   title: string;
   description: string;
+  tags: string[];
   user: string;
   no_of_likes: number;
   liked_by: IUser[];
@@ -63,6 +64,10 @@ export interface ITask {
 
 export interface IUserModel extends Model<IUser> {
   createOTP(): any;
+}
+
+export interface ITags {
+  name: string;
 }
 
 export type ResponseData = Record<string, any> | Record<string, any>[];

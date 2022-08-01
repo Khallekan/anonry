@@ -34,7 +34,7 @@ const handleJWTExpiredError = () =>
 const sendErrorDev = (err, req, res) => {
   console.log(req.originalUrl);
   // A) API
-  // if (req.originalUrl.startsWith('/thrindle')) {
+  // if (req.originalUrl.startsWith('/anonry')) {
   //   return res.status(err.statusCode).json({
   // 	status: err.status,
   // 	error: err,

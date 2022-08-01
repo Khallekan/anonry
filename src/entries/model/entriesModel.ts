@@ -18,6 +18,14 @@ const entrySchema = new Schema<IEntry>(
       minlength: [5, "Description must be at least 5 characters"],
       maxlength: [1000, "Description must be less than 500 characters"],
     },
+    tags: {
+      type: [
+        {
+          type: String,
+          ref: "tags",
+        },
+      ],
+    },
     user: {
       type: String,
       ref: "User",
