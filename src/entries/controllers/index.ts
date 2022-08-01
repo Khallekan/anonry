@@ -1,5 +1,6 @@
 import User from "../../users/model/userModel";
 import Entry from "../model/entriesModel";
+import Tags from "../../tags/model";
 import catchController from "../../utils/catchControllerAsyncs";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -25,19 +26,44 @@ export const getMyEntries = catchController(
 
 export const createEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user._id;
-    const title: string = req.body.title;
-    const description: string = req.body.description;
-    const tag: string = req.body.tags
+    const user_id: string | undefined = req.body.user._id;
+    const title: string | undefined = req.body.title;
+    const description: string | undefined = req.body.description;
+    const tags: string[] | undefined = req.body.tags;
 
     if (!user_id || !title || !description) {
       return resp.setError(StatusCodes.BAD_REQUEST, "All fields are required");
     }
-    const entry = await Entry.create({
-      title: req.body.title,
-      description: req.body.description,
+
+    interface IEntryDetails {
+      user: string;
+      title: string;
+      description: string;
+      tags?: string[];
+    }
+
+    const entryDetails: IEntryDetails = {
       user: user_id,
-    });
+      title: title,
+      description: description,
+    };
+
+    if (tags && tags.length > 5) {
+      return resp.setError(StatusCodes.BAD_REQUEST, "Maximum 5 tags allowed");
+    }
+    if (tags && tags.length <= 5) {
+      // check if Tags exist
+      const tagsExist = await Tags.find({ name: { $in: tags } });
+
+      if (tagsExist.length !== tags.length) {
+        return resp
+          .setError(StatusCodes.NOT_FOUND, "Some tags do not exist")
+          .send(res);
+      }
+      entryDetails.tags = tags;
+    }
+
+    const entry = await Entry.create(entryDetails);
 
     return resp
       .setSuccess(StatusCodes.OK, entry, "Entry created successfully")

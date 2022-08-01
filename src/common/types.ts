@@ -40,7 +40,7 @@ export interface IUser extends Document {
 export interface IEntry {
   title: string;
   description: string;
-  tags: string[];
+  tags?: string[];
   user: string;
   no_of_likes: number;
   liked_by: IUser[];

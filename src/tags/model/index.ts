@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
+import { ITags } from "../../common/types";
 
-const TagsModel = new Schema(
+const TagsModel = new Schema<ITags>(
   {
     name: {
       type: String,
@@ -8,77 +9,9 @@ const TagsModel = new Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      enum: [
-        // emotion tags
-        "happy",
-        "sad",
-        "angry",
-        "scared",
-        "confused",
-        "disgusted",
-        "surprised",
-        "calm",
-        "tired",
-        "bored",
-        "excited",
-        "sleepy",
-        "lonely",
-        "hungry",
-        "thirsty",
-        "sick",
-        "annoyed",
-        "curious",
-        "blessed",
-        "loved",
-        "indifferent",
-        "horny",
-        // activity tags
-        "running",
-        "walking",
-        "cycling",
-        "swimming",
-        "sitting",
-        "standing",
-        "sleeping",
-        "reading",
-        "writing",
-        "listening",
-        "watching",
-        "eating",
-        "drinking",
-        "working",
-        "studying",
-        "shopping",
-        "cleaning",
-        "cooking",
-        // location tags
-        "home",
-        "office",
-        "school",
-        "work",
-        "gym",
-        "park",
-        "restaurant",
-        "cafe",
-        "bar",
-        "shop",
-        "hospital",
-        "bank",
-        "hotel",
-        "airport",
-        "train",
-        "bus",
-        "taxi",
-        "car",
-        "bike",
-        "truck",
-        "humor",
-        "dark humor",
-        "light humor",
-      ],
     },
   },
   { timestamps: true }
 );
 
-export default model("tags", TagsModel);
+export default model<ITags>("tags", TagsModel);
