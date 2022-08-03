@@ -24,7 +24,8 @@ export const getUserProfile = catchControllerAsyncs(
     // get the lates 5 entries created by the user
     const entries = await Entry.find({ user: user_id, deleted: false })
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(3)
+      .select("-__v -user -updatedAt");
     user.entries = entries;
 
     return resp.setSuccess(StatusCodes.OK, user, "success").send(res);

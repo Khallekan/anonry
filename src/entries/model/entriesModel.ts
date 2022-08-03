@@ -64,13 +64,4 @@ entrySchema.pre(/^find/, function (next) {
   next();
 });
 
-// Update the user's no_of_entries everytime a new entry is created
-entrySchema.post("save", async function (doc) {
-  const user = await User.findById(doc.user);
-  if (user) {
-    user.no_of_entries = user.no_of_entries + 1;
-    user.save();
-  }
-});
-
 export default model<IEntry>("notes", entrySchema);

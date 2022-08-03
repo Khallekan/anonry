@@ -16,7 +16,7 @@ export const getMyEntries = catchController(
         .setError(StatusCodes.BAD_REQUEST, "User id is required")
         .send(res);
     }
-    const entries = await Entry.find({ user: user_id, deleted: false });
+    const entries = await Entry.find({ user: user_id, deleted: false }).select("-__v -user");
 
     return resp
       .setSuccess(StatusCodes.OK, entries, "Entries fetched successfully")
@@ -55,19 +55,28 @@ export const createEntry = catchController(
       // check if Tags exist
       const tagsExist = await Tags.find({ name: { $in: tags } });
 
+      console.log(tagsExist);
+
       if (tagsExist.length !== tags.length) {
         return resp
           .setError(StatusCodes.NOT_FOUND, "Some tags do not exist")
           .send(res);
       }
-      entryDetails.tags = tags;
+
+      entryDetails.tags = tagsExist.map((tag) => tag._id.toString());
     }
 
-    const entry = await Entry.create(entryDetails);
+    const entry = await (
+      await Entry.create(entryDetails)
+    ).populate("tags user");
 
-    return resp
+    resp
       .setSuccess(StatusCodes.OK, entry, "Entry created successfully")
       .send(res);
+    // update the user's no_of_entries
+    await User.findByIdAndUpdate(user_id, {
+      $inc: { no_of_entries: 1 },
+    });
   }
 );
 
