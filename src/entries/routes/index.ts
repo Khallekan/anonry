@@ -5,6 +5,7 @@ import {
   deleteEntry,
   editEntry,
   getMyEntries,
+  getSingleEntry,
 } from "../controllers";
 
 const router = Router();
@@ -13,7 +14,11 @@ router
   .route("/")
   .get(verifyToken, getMyEntries)
   .post(verifyToken, createEntry)
-  .patch(verifyToken, editEntry)
+  .patch(verifyToken, editEntry);
+
+router
+  .route("/:id")
+  .get(verifyToken, getSingleEntry)
   .delete(verifyToken, deleteEntry);
 
 export default router;

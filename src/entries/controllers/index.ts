@@ -5,6 +5,7 @@ import catchController from "../../utils/catchControllerAsyncs";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import ResponseStatus from "../../utils/response";
+import QueryString from "qs";
 
 const resp = new ResponseStatus();
 
@@ -16,10 +17,32 @@ export const getMyEntries = catchController(
         .setError(StatusCodes.BAD_REQUEST, "User id is required")
         .send(res);
     }
-    const entries = await Entry.find({ user: user_id, deleted: false }).select("-__v -user");
+    const entries = await Entry.find({ user: user_id, deleted: false })
+      .select("-__v -user")
+      .sort({ updatedAt: -1 });
 
     return resp
       .setSuccess(StatusCodes.OK, entries, "Entries fetched successfully")
+      .send(res);
+  }
+);
+
+export const getSingleEntry = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const entry_id: string | undefined = req.params.id;
+    if (!entry_id) {
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
+        .send(res);
+    }
+    const entry = await Entry.findOne({ _id: entry_id, deleted: false }).select(
+      "-__v"
+    );
+    if (!entry) {
+      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+    }
+    return resp
+      .setSuccess(StatusCodes.OK, entry, "Entry fetched successfully")
       .send(res);
   }
 );
@@ -32,7 +55,9 @@ export const createEntry = catchController(
     const tags: string[] | undefined = req.body.tags;
 
     if (!user_id || !title || !description) {
-      return resp.setError(StatusCodes.BAD_REQUEST, "All fields are required");
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "All fields are required")
+        .send(res);
     }
 
     interface IEntryDetails {
@@ -49,7 +74,9 @@ export const createEntry = catchController(
     };
 
     if (tags && tags.length > 5) {
-      return resp.setError(StatusCodes.BAD_REQUEST, "Maximum 5 tags allowed");
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Maximum 5 tags allowed")
+        .send(res);
     }
     if (tags && tags.length <= 5) {
       // check if Tags exist
@@ -104,6 +131,10 @@ export const editEntry = catchController(
       { new: true }
     );
 
+    if (!entry) {
+      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+    }
+
     return resp
       .setSuccess(StatusCodes.OK, entry, "Entry updated successfully")
       .send(res);
@@ -113,9 +144,14 @@ export const editEntry = catchController(
 export const deleteEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.body.user._id;
-    const entry_id: string = req.body.entry_id;
+    const entry_id: string | undefined = req.params.id;
+
+    console.log(entry_id);
+
     if (!entry_id) {
-      return resp.setError(StatusCodes.BAD_REQUEST, "Entry id is required");
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
+        .send(res);
     }
 
     const entry = await Entry.findOneAndUpdate(
@@ -125,7 +161,7 @@ export const deleteEntry = catchController(
     );
 
     if (!entry) {
-      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found");
+      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
     }
 
     // Update the user's no_of_entries everytime a new entry is deleted

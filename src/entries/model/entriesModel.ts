@@ -64,4 +64,4 @@ entrySchema.pre(/^find/, function (next) {
   next();
 });
 
-export default model<IEntry>("notes", entrySchema);
+export default model<IEntry>("entries", entrySchema);
