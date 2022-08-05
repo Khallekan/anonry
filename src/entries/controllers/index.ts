@@ -15,12 +15,62 @@ export const getMyEntries = catchController(
         .setError(StatusCodes.BAD_REQUEST, "User id is required")
         .send(res);
     }
-    const entries = await Entry.find({ user: user_id, deleted: false })
+
+    let limit: number, page: number, totalDocuments: number;
+
+    if (req.query.page && typeof req.query.page != "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid page number" });
+    }
+    if (req.query.limit && typeof req.query.limit != "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid limit number" });
+    }
+
+    // if the page is defined and of a valid type convert it to number
+    // if converted value is not a number assign a default value of 1
+    page = req.query.page ? parseInt(req.query.page) : 1;
+    // if the limit is defined and of a valid type convert it to number
+    // if converted value is not a number assign a default value of 20
+    limit = req.query.limit ? parseInt(req.query.limit) : 20;
+
+    // calculate the start index of the documents to be returned
+    const startIndex = (page - 1) * limit;
+
+    interface ISearchObject {
+      user: string;
+      deleted: boolean;
+    }
+
+    const searchObj: ISearchObject = {
+      user: user_id,
+      deleted: false,
+    };
+
+    // find the total number of documents in the collection matching the search criteria
+    totalDocuments = await Entry.countDocuments(searchObj);
+
+    const pageInfo = createPageInfo({
+      page,
+      limit,
+      startIndex,
+      totalDocuments,
+    });
+
+    const entries = await Entry.find(searchObj)
       .select("-__v -user")
+      .limit(limit)
+      .skip(startIndex)
       .sort({ updatedAt: -1 });
 
     return resp
-      .setSuccess(StatusCodes.OK, entries, "Entries fetched successfully")
+      .setSuccess(
+        StatusCodes.OK,
+        { entries, pageInfo },
+        "Entries fetched successfully"
+      )
       .send(res);
   }
 );
@@ -171,6 +221,42 @@ export const deleteEntry = catchController(
 
     return resp
       .setSuccess(StatusCodes.OK, [], "Entry deleted successfully")
+      .send(res);
+  }
+);
+
+export const publishEntry = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user_id: string = req.body.user._id;
+    const entry_id: string | undefined = req.params.id;
+
+    if (!entry_id) {
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
+        .send(res);
+    }
+
+    const entry = await Entry.findOneAndUpdate(
+      { _id: entry_id, user: user_id, published: false },
+      { published: true },
+      { new: true }
+    );
+
+    if (!entry) {
+      return resp
+        .setError(StatusCodes.NOT_FOUND, "Entry not found or already published")
+        .send(res);
+    }
+
+    // Update the user's no_of_published_entries everytime a new entry is published
+    const user = await User.findById(user_id);
+    if (user) {
+      user.no_of_published_entries = user.no_of_published_entries + 1;
+      await user.save();
+    }
+
+    return resp
+      .setSuccess(StatusCodes.OK, entry, "Entry published successfully")
       .send(res);
   }
 );

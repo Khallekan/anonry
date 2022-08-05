@@ -6,6 +6,7 @@ import {
   editEntry,
   getMyEntries,
   getSingleEntry,
+  publishEntry,
 } from "../controllers";
 
 const router = Router();
@@ -19,6 +20,7 @@ router
 router
   .route("/:id")
   .get(verifyToken, getSingleEntry)
-  .delete(verifyToken, deleteEntry);
+  .delete(verifyToken, deleteEntry)
+  .patch(verifyToken, publishEntry);
 
 export default router;
