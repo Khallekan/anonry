@@ -13,7 +13,7 @@ const createPageInfo = ({
 }): IPageInfo => {
   const pageInfo: IPageInfo = {
     totalPages: Math.ceil(totalDocuments / limit),
-    totalProducts: totalDocuments,
+    totalHits: totalDocuments,
   };
 
   const endIndex: number = page * limit;

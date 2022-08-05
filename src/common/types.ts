@@ -74,7 +74,7 @@ export type ResponseData = Record<string, any> | Record<string, any>[];
 
 export interface IPageInfo {
   totalPages: number;
-  totalProducts: number;
+  totalHits: number;
   next?: {
     page: number;
     limit: number;
