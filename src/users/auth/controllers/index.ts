@@ -1,4 +1,3 @@
-import catchControllerAsyncs from "../../../utils/catchControllerAsyncs";
 import { Request, Response, NextFunction } from "express";
 import isEmail from "validator/lib/isEmail";
 import User from "../../model/userModel";
@@ -10,8 +9,9 @@ import {
 } from "../../../helperService/emailService";
 import { generateToken } from "../../../utils/generateToken";
 import { StatusCodes } from "http-status-codes";
+import { catchController } from "../../../utils";
 
-export const createUser = catchControllerAsyncs(
+export const createUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     // make sure user_name, email and password fields are passed in the req.body
     if (
@@ -121,7 +121,7 @@ export const createUser = catchControllerAsyncs(
   }
 );
 
-export const verifyEmail = catchControllerAsyncs(
+export const verifyEmail = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
     const otp: string = req.body.otp;
@@ -178,7 +178,7 @@ export const verifyEmail = catchControllerAsyncs(
   }
 );
 
-export const login = catchControllerAsyncs(
+export const login = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const { identifier, password }: { identifier: string; password: string } =
       req.body;
@@ -269,7 +269,7 @@ export const login = catchControllerAsyncs(
   }
 );
 
-export const resendOTP = catchControllerAsyncs(
+export const resendOTP = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
     const link: string = req.body.link;
@@ -313,7 +313,7 @@ export const resendOTP = catchControllerAsyncs(
   }
 );
 
-export const forgotPassword = catchControllerAsyncs(
+export const forgotPassword = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
     const link: string = req.body.link;
@@ -365,7 +365,7 @@ export const forgotPassword = catchControllerAsyncs(
   }
 );
 
-export const resetPassword = catchControllerAsyncs(
+export const resetPassword = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const email: string = req.body.email;
     const otp: string = req.body.otp;
@@ -430,7 +430,7 @@ export const resetPassword = catchControllerAsyncs(
   }
 );
 
-export const updatePassword = catchControllerAsyncs(
+export const updatePassword = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.body.user._id;
     const password: string = req.body.password;

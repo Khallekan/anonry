@@ -71,3 +71,16 @@ export interface ITags {
 }
 
 export type ResponseData = Record<string, any> | Record<string, any>[];
+
+export interface IPageInfo {
+  totalPages: number;
+  totalHits: number;
+  next?: {
+    page: number;
+    limit: number;
+  };
+  previous?: {
+    page: number;
+    limit: number;
+  };
+}
