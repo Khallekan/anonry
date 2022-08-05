@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-export default (
+export const catchController = (
   fn: (
     req: Request,
     res: Response,

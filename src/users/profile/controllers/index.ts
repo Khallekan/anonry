@@ -2,13 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { IUser } from "../../../common/types";
 import Entry from "../../../entries/model/entriesModel";
-import catchControllerAsyncs from "../../../utils/catchControllerAsyncs";
-import ResponseStatus from "../../../utils/response";
+import { catchController, ResponseStatus } from "../../../utils";
 import User from "../../model/userModel";
 
 const resp = new ResponseStatus();
 
-export const getUserProfile = catchControllerAsyncs(
+export const getUserProfile = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.body.user._id;
 
