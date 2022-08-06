@@ -46,6 +46,7 @@ export interface IEntry {
   liked_by: IUser[];
   no_of_comments: number;
   edited: boolean;
+  published: boolean;
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -216,6 +216,9 @@ export const deleteEntry = catchController(
     const user = await User.findById(user_id);
     if (user) {
       user.no_of_entries = user.no_of_entries - 1;
+      if (entry.published) {
+        user.no_of_published_entries = user.no_of_published_entries - 1;
+      }
       user.save();
     }
 
@@ -237,10 +240,16 @@ export const publishEntry = catchController(
     }
 
     const entry = await Entry.findOneAndUpdate(
-      { _id: entry_id, user: user_id, published: false },
+      {
+        _id: entry_id,
+        user: user_id,
+        published: { $in: [false, undefined, null] },
+      },
       { published: true },
       { new: true }
     );
+
+    console.log(entry);
 
     if (!entry) {
       return resp
