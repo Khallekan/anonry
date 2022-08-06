@@ -35,6 +35,10 @@ const entrySchema = new Schema<IEntry>(
       type: Number,
       default: 0,
     },
+    published: {
+      type: Boolean,
+      default: false,
+    },
     liked_by: {
       type: [{ type: String, ref: "user" }],
       default: [],

@@ -46,11 +46,11 @@ export const createUser = catchController(
       });
     }
     // make sure user_name is at least 5 characters long
-    if (user_name.length < 5) {
+    if (user_name.length < 3) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "User name must be at least 5 characters long",
+          message: "User name must be at least 3 characters long",
         },
       });
     }
@@ -108,7 +108,9 @@ export const createUser = catchController(
 
     const message: string = `Use this code to verify your account`;
     // send OTP to user's email
-    sendOTP(user_name, email, message, otp, link);
+    let emailResponse = sendOTP(user_name, email, message, otp, link);
+
+    console.log(emailResponse);
 
     await user.save();
 
