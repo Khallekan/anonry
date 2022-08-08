@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import isEmail from "validator/lib/isEmail";
 import User from "../../model/userModel";
 import {
@@ -10,6 +10,7 @@ import {
 import { generateToken } from "../../../utils/generateToken";
 import { StatusCodes } from "http-status-codes";
 import { catchController } from "../../../utils";
+import { Request } from "common/types";
 
 export const createUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -434,7 +435,7 @@ export const resetPassword = catchController(
 
 export const updatePassword = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user._id;
+    const user_id: string = req.user._id;
     const password: string = req.body.password;
     if (!user_id || !password) {
       return res.status(StatusCodes.BAD_REQUEST).json({

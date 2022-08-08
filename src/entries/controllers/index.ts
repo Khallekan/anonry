@@ -1,7 +1,8 @@
 import User from "../../users/model/userModel";
 import Entry from "../model/entriesModel";
-import Tags from "../../tags/model";
-import { NextFunction, Request, Response } from "express";
+import Tags from "../../tags/model/tagsModel";
+import { NextFunction, Response } from "express";
+import { Request } from "../../common/types";
 import { StatusCodes } from "http-status-codes";
 import { catchController, createPageInfo, ResponseStatus } from "../../utils";
 
@@ -9,7 +10,7 @@ const resp = new ResponseStatus();
 
 export const getMyEntries = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user._id;
+    const user_id: string = req.user._id;
     if (!user_id) {
       return resp
         .setError(StatusCodes.BAD_REQUEST, "User id is required")
@@ -97,7 +98,7 @@ export const getSingleEntry = catchController(
 
 export const createEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string | undefined = req.body.user._id;
+    const user_id: string | undefined = req.user._id;
     const title: string | undefined = req.body.title;
     const description: string | undefined = req.body.description;
     const tags: string[] | undefined = req.body.tags;
@@ -157,7 +158,7 @@ export const createEntry = catchController(
 
 export const editEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user.id;
+    const user_id: string = req.user.id;
     const entry_id: string = req.body.entry_id;
     const title: string = req.body.title;
     const description: string = req.body.description;
@@ -191,7 +192,7 @@ export const editEntry = catchController(
 
 export const deleteEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user._id;
+    const user_id: string = req.user._id;
     const entry_id: string | undefined = req.params.id;
 
     console.log(entry_id);
@@ -230,7 +231,7 @@ export const deleteEntry = catchController(
 
 export const publishEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.body.user._id;
+    const user_id: string = req.user._id;
     const entry_id: string | undefined = req.params.id;
 
     if (!entry_id) {

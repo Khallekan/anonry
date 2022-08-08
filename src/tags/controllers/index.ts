@@ -1,4 +1,4 @@
-import Tag from "../model";
+import Tag from "../model/tagsModel";
 import { StatusCodes } from "http-status-codes";
 import { NextFunction, Request, Response } from "express";
 import { catchController, ResponseStatus } from "../../utils";

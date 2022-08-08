@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { Request } from "../common/types";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import User from "../users/model/userModel";
@@ -35,7 +36,7 @@ async function verifyToken(
         );
         return response.send(res);
       }
-      req.body.user = user;
+      req.user = user;
       return next();
     } catch (error) {
       console.error(error);

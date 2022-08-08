@@ -1,4 +1,9 @@
 import { Document, Model } from "mongoose";
+import { Request as REQUEST } from "express";
+
+export interface Request extends REQUEST {
+  user: IUser;
+}
 
 // User Interface
 export interface IUser extends Document {
@@ -41,7 +46,7 @@ export interface IEntry {
   title: string;
   description: string;
   tags?: string[];
-  user: string;
+  user: IUser;
   no_of_likes: number;
   liked_by: IUser[];
   no_of_comments: number;
@@ -61,6 +66,14 @@ export interface ITask {
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IBookmark {
+  bookmarked_by: string;
+  entry: string;
+  published_by: string;
+  deleted: boolean;
+  tags: ITags[];
 }
 
 export interface IUserModel extends Model<IUser> {
