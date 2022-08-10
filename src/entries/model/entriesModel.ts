@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import { IEntry } from "../../common/types";
-import User from "../../users/model/userModel";
 
 // create mongoose schema to store blog post
 const entrySchema = new Schema<IEntry>(

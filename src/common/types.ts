@@ -84,6 +84,12 @@ export interface ITags {
   name: string;
 }
 
+export interface ILikesModel {
+  liked_by: string;
+  owner: string;
+  entry: string;
+}
+
 export type ResponseData = Record<string, any> | Record<string, any>[];
 
 export interface IPageInfo {

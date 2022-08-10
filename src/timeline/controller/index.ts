@@ -64,6 +64,6 @@ export const getTimeline = catchController(
       StatusCodes.OK,
       { entries, pageInfo },
       "Timeline fetched successfully"
-    );
+    ).send(res);
   }
 );
