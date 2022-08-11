@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import { Response, NextFunction, Request } from "express";
 import isEmail from "validator/lib/isEmail";
 import User from "../../model/userModel";
 import {
@@ -7,10 +7,9 @@ import {
   sendPasswordChanged,
   sendPasswordResetLink,
 } from "../../../helperService/emailService";
-import { generateToken } from "../../../utils/generateToken";
 import { StatusCodes } from "http-status-codes";
-import { catchController } from "../../../utils";
-import { Request } from "common/types";
+import catchController from "../../../utils/catchControllerAsyncs";
+import generateToken from "../../../utils/generateToken";
 
 export const createUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export const generateToken = function (
+const generateToken = function (
   userId: string,
   type: "access" | "refresh"
 ): string {
@@ -8,3 +8,5 @@ export const generateToken = function (
     expiresIn: type === "access" ? "2h" : "1y",
   });
 };
+
+export default generateToken;

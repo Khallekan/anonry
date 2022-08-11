@@ -72,7 +72,6 @@ export interface IBookmark {
   bookmarked_by: string;
   entry: string;
   published_by: string;
-  deleted: boolean;
   tags: ITags[];
 }
 

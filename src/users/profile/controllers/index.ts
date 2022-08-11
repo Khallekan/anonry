@@ -2,7 +2,8 @@ import { NextFunction, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { IUser, Request } from "../../../common/types";
 import Entry from "../../../entries/model/entriesModel";
-import { catchController, ResponseStatus } from "../../../utils";
+import catchController from "../../../utils/catchControllerAsyncs";
+import ResponseStatus from "../../../utils/response";
 import User from "../../model/userModel";
 
 const resp = new ResponseStatus();

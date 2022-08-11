@@ -36,4 +36,4 @@ const createPageInfo = ({
   return pageInfo;
 };
 
-export { createPageInfo };
+export default createPageInfo;

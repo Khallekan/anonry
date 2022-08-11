@@ -1,7 +1,9 @@
 import Tag from "../model/tagsModel";
 import { StatusCodes } from "http-status-codes";
 import { NextFunction, Request, Response } from "express";
-import { catchController, ResponseStatus } from "../../utils";
+import ResponseStatus from "../../utils/response";
+import catchController from "../../utils/catchControllerAsyncs";
+
 
 const resp = new ResponseStatus();
 

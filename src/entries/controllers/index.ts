@@ -4,7 +4,9 @@ import Tags from "../../tags/model/tagsModel";
 import { NextFunction, Response } from "express";
 import { Request } from "../../common/types";
 import { StatusCodes } from "http-status-codes";
-import { catchController, createPageInfo, ResponseStatus } from "../../utils";
+import ResponseStatus from "../../utils/response";
+import catchController from "../../utils/catchControllerAsyncs";
+import createPageInfo from "../../utils/createPagination";
 
 const resp = new ResponseStatus();
 

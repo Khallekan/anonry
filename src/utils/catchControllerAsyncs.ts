@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { Request } from "../common/types";
 
-export const catchController = (
+const catchController = (
   fn: (
     req: Request,
     res: Response,
@@ -18,3 +18,5 @@ export const catchController = (
     }
   };
 };
+
+export default catchController;

@@ -1,9 +1,8 @@
-import { Response, NextFunction } from "express";
-import { Request } from "../common/types";
+import { Response, NextFunction, Request } from "express";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import User from "../users/model/userModel";
-import { ResponseStatus } from "./response";
+import ResponseStatus from "./response";
 
 const response = new ResponseStatus();
 

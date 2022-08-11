@@ -14,7 +14,7 @@ const bookmarkModel = new Schema<IBookmark>(
       required: [true, "Please provide an entry"],
     },
     tags: {
-     type: [
+      type: [
         {
           type: String,
           ref: "tags",
@@ -25,11 +25,6 @@ const bookmarkModel = new Schema<IBookmark>(
       type: String,
       ref: "user",
       required: [true, "Please provide an entry owner"],
-    },
-    deleted: {
-      type: Boolean,
-      default: false,
-      select: false,
     },
   },
   { timestamps: true }

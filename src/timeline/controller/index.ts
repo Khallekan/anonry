@@ -1,8 +1,9 @@
-import { Request } from "common/types";
-import { NextFunction, Response } from "express";
-import { catchController, createPageInfo, ResponseStatus } from "utils";
-import Entry from "entries/model/entriesModel";
+import { NextFunction, Request, Response } from "express";
+import Entry from "../../entries/model/entriesModel";
 import { StatusCodes } from "http-status-codes";
+import ResponseStatus from "../../utils/response";
+import catchController from "../../utils/catchControllerAsyncs";
+import createPageInfo from "../../utils/createPagination";
 
 const resp = new ResponseStatus();
 
@@ -60,10 +61,12 @@ export const getTimeline = catchController(
       totalDocuments,
     });
 
-    resp.setSuccess(
-      StatusCodes.OK,
-      { entries, pageInfo },
-      "Timeline fetched successfully"
-    ).send(res);
+    resp
+      .setSuccess(
+        StatusCodes.OK,
+        { entries, pageInfo },
+        "Timeline fetched successfully"
+      )
+      .send(res);
   }
 );
