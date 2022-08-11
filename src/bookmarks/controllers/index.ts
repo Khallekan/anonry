@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import catchController from "../../utils/catchControllerAsyncs";
 import Entry from "../../entries/model/entriesModel";
 import Bookmark from "../model/bookmarkModel";
+import User from "../../users/model/userModel";
 import ResponseStatus from "../../utils/response";
 import createPageInfo from "../../utils/createPagination";
 
@@ -49,13 +50,20 @@ export const createBookmark = catchController(
         .send(res);
     }
 
-    return resp
+    resp
       .setSuccess(
         StatusCodes.CREATED,
         bookmark,
         "Bookmark created successfully"
       )
       .send(res);
+
+    // Update the user's no_of_bookmarks everytime a new bookmark is created
+    await User.findByIdAndUpdate(user_id, {
+      $inc: { no_of_bookmarks: 1 },
+    });
+
+    console.log(`<-----User ${user_id} bookmarked entry ${entry_id}---->`);
   }
 );
 
@@ -111,10 +119,11 @@ export const getBookmarks = catchController(
       searchBy.tags = { $in: req.query.tags.split(",") };
     }
 
-    const entries = await Bookmark.find(searchBy)
+    const bookmarks = await Bookmark.find(searchBy)
       .limit(limit)
       .skip(startIndex)
-      .sort(sort);
+      .sort(sort)
+      .select("-__v -updatedAt");
 
     const totalDocuments = await Bookmark.countDocuments(searchBy);
 
@@ -128,7 +137,7 @@ export const getBookmarks = catchController(
     return resp
       .setSuccess(
         StatusCodes.OK,
-        { entries, pageInfo },
+        { bookmarks, pageInfo },
         "Bookmarks retrieved successfully"
       )
       .send(res);
@@ -153,7 +162,12 @@ export const removeBookmark = catchController(
         .send(res);
     }
 
-    if (bookmark.bookmarked_by != user_id) {
+    console.log({
+      bookmarked_by: bookmark.bookmarked_by._id,
+      user_id,
+    });
+
+    if (bookmark.bookmarked_by._id.toString() !== user_id.toString()) {
       return resp
         .setError(
           StatusCodes.FORBIDDEN,
@@ -164,8 +178,13 @@ export const removeBookmark = catchController(
 
     await Bookmark.deleteOne({ _id: bookmark_id });
 
-    return resp
+    resp
       .setSuccess(StatusCodes.OK, {}, "Bookmark deleted successfully")
       .send(res);
+
+    // Update the user's no_of_bookmarks everytime a bookmark is deleted
+    await User.findByIdAndUpdate(user_id, {
+      $inc: { no_of_bookmarks: -1 },
+    });
   }
 );

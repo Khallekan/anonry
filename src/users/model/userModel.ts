@@ -105,6 +105,10 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
+    no_of_bookmarks: {
+      type: Number,
+      default: 0,
+    },
     no_of_entries: {
       type: Number,
       default: 0,

@@ -19,17 +19,22 @@ export const getMyEntries = catchController(
         .send(res);
     }
 
-    let limit: number, page: number, totalDocuments: number;
+    let limit: number, page: number, sort: string, totalDocuments: number;
 
     if (req.query.page && typeof req.query.page != "string") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid page number" });
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Page must be a string")
+        .send(res);
     }
     if (req.query.limit && typeof req.query.limit != "string") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid limit number" });
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Limit must be a string")
+        .send(res);
+    }
+    if (req.query.sort && typeof req.query.sort != "string") {
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Sort must be a string")
+        .send(res);
     }
 
     // if the page is defined and of a valid type convert it to number
@@ -39,18 +44,38 @@ export const getMyEntries = catchController(
     // if converted value is not a number assign a default value of 20
     limit = req.query.limit ? parseInt(req.query.limit) : 20;
 
+    // if the sort is defined and of a valid type convert it to string
+    // if converted value is not a string assign a default value of createdAt
+    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
+
     // calculate the start index of the documents to be returned
     const startIndex = (page - 1) * limit;
 
     interface ISearchObject {
       user: string;
       deleted: boolean;
+      published?: { $in: (boolean | undefined | null)[] };
     }
 
     const searchObj: ISearchObject = {
       user: user_id,
       deleted: false,
     };
+
+    if (req.query.published && typeof req.query.published == "string") {
+      const publishedType = req.query.published.trim().toLowerCase();
+      if (publishedType === "true") {
+        searchObj.published = { $in: [true] };
+      }
+      if (publishedType === "false") {
+        searchObj.published = { $in: [false, null, undefined] };
+      }
+      if (publishedType !== "true" && publishedType !== "false") {
+        return resp
+          .setError(StatusCodes.BAD_REQUEST, "Invalid published type")
+          .send(res);
+      }
+    }
 
     // find the total number of documents in the collection matching the search criteria
     totalDocuments = await Entry.countDocuments(searchObj);
@@ -66,7 +91,9 @@ export const getMyEntries = catchController(
       .select("-__v -user")
       .limit(limit)
       .skip(startIndex)
-      .sort({ updatedAt: -1 });
+      .sort(sort);
+
+    console.log({ entries });
 
     return resp
       .setSuccess(
@@ -216,14 +243,9 @@ export const deleteEntry = catchController(
     }
 
     // Update the user's no_of_entries everytime a new entry is deleted
-    const user = await User.findById(user_id);
-    if (user) {
-      user.no_of_entries = user.no_of_entries - 1;
-      if (entry.published) {
-        user.no_of_published_entries = user.no_of_published_entries - 1;
-      }
-      user.save();
-    }
+    await User.findByIdAndUpdate(user_id, {
+      $inc: { no_of_entries: -1 },
+    });
 
     return resp
       .setSuccess(StatusCodes.OK, [], "Entry deleted successfully")
@@ -235,6 +257,8 @@ export const publishEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
     const entry_id: string | undefined = req.params.id;
+    let action: string | undefined = req.body.action;
+    const validActions = ["publish", "unpublish"];
 
     if (!entry_id) {
       return resp
@@ -242,33 +266,75 @@ export const publishEntry = catchController(
         .send(res);
     }
 
-    const entry = await Entry.findOneAndUpdate(
-      {
+    if (action && !validActions.includes(action)) {
+      return resp.setError(StatusCodes.BAD_REQUEST, "Invalid action").send(res);
+    }
+
+    // if action is not provided or action is "publish"
+    // attempt to publish the entry
+    if (!action || action === "publish") {
+      const entry = await Entry.findOne({
         _id: entry_id,
         user: user_id,
-        published: { $in: [false, undefined, null] },
-      },
-      { published: true },
-      { new: true }
-    );
+      }).select("-__v -user");
 
-    console.log(entry);
+      if (!entry) {
+        return resp
+          .setError(StatusCodes.NOT_FOUND, "Entry not found")
+          .send(res);
+      }
 
-    if (!entry) {
-      return resp
-        .setError(StatusCodes.NOT_FOUND, "Entry not found or already published")
+      if (entry.published) {
+        return resp
+          .setError(StatusCodes.BAD_REQUEST, "Entry already published")
+          .send(res);
+      }
+
+      entry.published = true;
+      await entry.save();
+      resp
+        .setSuccess(StatusCodes.OK, entry, "Entry published successfully")
         .send(res);
+
+      // Update the user's no_of_published_entries everytime a new entry is published
+      await User.findByIdAndUpdate(user_id, {
+        $inc: { no_of_published_entries: 1 },
+      });
+
+      return;
     }
 
-    // Update the user's no_of_published_entries everytime a new entry is published
-    const user = await User.findById(user_id);
-    if (user) {
-      user.no_of_published_entries = user.no_of_published_entries + 1;
-      await user.save();
-    }
+    // if action is "unpublish"
+    // attempt to unpublish the entry
+    if (action === "unpublish") {
+      const entry = await Entry.findOne({
+        _id: entry_id,
+        user: user_id,
+      }).select("-__v -user");
 
-    return resp
-      .setSuccess(StatusCodes.OK, entry, "Entry published successfully")
-      .send(res);
+      if (!entry) {
+        return resp
+          .setError(StatusCodes.NOT_FOUND, "Entry not found")
+          .send(res);
+      }
+
+      if (!entry.published) {
+        return resp
+          .setError(StatusCodes.BAD_REQUEST, "Entry already is not published")
+          .send(res);
+      }
+
+      entry.published = false;
+      await entry.save();
+      resp
+        .setSuccess(StatusCodes.OK, entry, "Entry unpublished successfully")
+        .send(res);
+
+      // Update the user's no_of_published_entries everytime a new entry is unpublished
+      await User.findByIdAndUpdate(user_id, {
+        $inc: { no_of_published_entries: -1 },
+      });
+      return;
+    }
   }
 );

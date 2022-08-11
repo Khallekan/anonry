@@ -1,5 +1,6 @@
-import { Document, Model } from "mongoose";
+import { Document, Model, ObjectId } from "mongoose";
 import { Request as REQUEST } from "express";
+
 
 export interface Request extends REQUEST {
   user: IUser;
@@ -7,6 +8,7 @@ export interface Request extends REQUEST {
 
 // User Interface
 export interface IUser extends Document {
+  _id: string;
   user_name: string;
   email: string;
   password: string;
@@ -28,6 +30,7 @@ export interface IUser extends Document {
   deactivated_at: Date;
   no_of_likes: number;
   no_of_dislikes: number;
+  no_of_bookmarks: number;
   no_of_comments: number;
   no_of_published_entries: number;
   no_of_notes: number;
@@ -69,7 +72,7 @@ export interface ITask {
 }
 
 export interface IBookmark {
-  bookmarked_by: string;
+  bookmarked_by: IUser;
   entry: string;
   published_by: string;
   tags: ITags[];

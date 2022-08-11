@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IBookmark } from "../../common/types";
+import User from "../../users/model/userModel";
 
 const bookmarkModel = new Schema<IBookmark>(
   {
@@ -32,11 +33,10 @@ const bookmarkModel = new Schema<IBookmark>(
 
 // on find populate with user and entry
 bookmarkModel.pre(/^find/, function (next) {
-  this.populate("user", "name email avatar");
-  this.populate({
-    path: "entry",
-    select: "title",
-  });
+  this.populate("bookmarked_by", "name email avatar");
+  this.populate("published_by", "name email avatar");
+  this.populate("tags");
+  this.populate("entry", "+title +description -user");
   next();
 });
 
