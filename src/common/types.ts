@@ -1,7 +1,6 @@
 import { Document, Model, ObjectId } from "mongoose";
 import { Request as REQUEST } from "express";
 
-
 export interface Request extends REQUEST {
   user: IUser;
 }
@@ -58,6 +57,7 @@ export interface IEntry {
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  isLiked?: boolean;
 }
 
 // Task Interface
