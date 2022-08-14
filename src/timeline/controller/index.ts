@@ -58,7 +58,7 @@ export const getTimeline = catchController(
       entries.map((entry) => {
         
         // check if the user_id is in the liked_by array
-        const liked_by = entry.liked_by.find((user) => user._id === user_id);
+        const liked_by = entry.liked_by.find((user) => user.toString() === user_id);
         
         if (liked_by) {
           entry.isLiked = true;

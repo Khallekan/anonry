@@ -1,4 +1,4 @@
-import { Document, Model, ObjectId } from "mongoose";
+import { Document, Model, Schema } from "mongoose";
 import { Request as REQUEST } from "express";
 
 export interface Request extends REQUEST {
@@ -44,13 +44,13 @@ export interface IUser extends Document {
 }
 
 // Entry Interface
-export interface IEntry {
+export interface IEntry extends Document {
   title: string;
   description: string;
   tags?: string[];
   user: IUser;
   no_of_likes: number;
-  liked_by: IUser[];
+  liked_by: string[];
   no_of_comments: number;
   edited: boolean;
   published: boolean;
@@ -61,20 +61,20 @@ export interface IEntry {
 }
 
 // Task Interface
-export interface ITask {
+export interface ITask extends Document {
   title: string;
   description: string;
   status: "pending" | "active" | "completed";
-  user: string;
+  user: IUser;
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IBookmark {
+export interface IBookmark extends Document {
   bookmarked_by: IUser;
-  entry: string;
-  published_by: string;
+  entry: IEntry;
+  published_by: IUser;
   tags: ITags[];
 }
 
@@ -82,11 +82,11 @@ export interface IUserModel extends Model<IUser> {
   createOTP(): any;
 }
 
-export interface ITags {
+export interface ITags extends Document {
   name: string;
 }
 
-export interface ILikesModel {
+export interface ILikesModel extends Document {
   liked_by: string;
   owner: string;
   entry: string;

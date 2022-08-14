@@ -6,6 +6,7 @@ import ResponseStatus from "../../utils/response";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { ObjectId } from "mongodb";
+import { IUser } from "../../common/types";
 const resp = new ResponseStatus();
 
 export const handleLikes = catchController(
@@ -40,6 +41,11 @@ export const handleLikes = catchController(
     }
 
     if (action === "unlike") {
+      if (!entry.liked_by.includes(liked_by)) {
+        return resp
+          .setError(StatusCodes.BAD_REQUEST, "Entry is not liked")
+          .send(res);
+      }
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
       entry.no_of_likes -= 1;
       entry.liked_by = entry.liked_by.filter(
@@ -64,39 +70,37 @@ export const handleLikes = catchController(
         .send(res);
     }
 
-    
+    if (action === "like") {
+      if (entry.liked_by.includes(liked_by)) {
+        return resp
+          .setError(StatusCodes.BAD_REQUEST, "Entry already liked")
+          .send(res);
+      }
+      // if the entry is not liked by the user, then add the like to the likes collection
+      await Likes.create({
+        entry: entry_id,
+        liked_by,
+        owner: entry.user._id,
+      });
 
-    // if the entry is not liked by the user, then add the like to the likes collection
-    const like = await Likes.create({
-      entry: entry_id,
-      liked_by,
-      owner: entry.user._id,
-    });
+      // add the user id to the liked_by array in the entry
+      await Entry.findByIdAndUpdate(
+        entry_id,
+        { $push: { liked_by: liked_by }, $inc: { no_of_likes: 1 } },
+        { new: true }
+      );
 
-    // increase the no of likes of the entry by 1
-    const updatedEntry = await Entry.findByIdAndUpdate(
-      entry_id,
-      { $inc: { no_of_likes: 1 } },
-      { new: true }
-    ).select("-liked_by");
+      await User.findByIdAndUpdate(
+        entry.user._id,
+        { $inc: { no_of_likes: 1 } },
+        { new: true }
+      );
 
-    if (!updatedEntry) {
-      //  delete the like from the likes collection
-      await Likes.findByIdAndDelete(like._id);
+      entry.isLiked = true;
+
       return resp
-        .setError(StatusCodes.INTERNAL_SERVER_ERROR, "Error updating entry")
+        .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
         .send(res);
     }
-
-    // increase the no of likes of the user by 1
-    await User.findByIdAndUpdate(
-      entry.user._id,
-      { $inc: { no_of_likes: 1 } },
-      { new: true }
-    );
-    updatedEntry.isLiked = true;
-    return resp
-      .setSuccess(StatusCodes.OK, [updatedEntry], "Entry liked successfully")
-      .send(res);
   }
 );

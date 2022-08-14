@@ -21,13 +21,13 @@ const entrySchema = new Schema<IEntry>(
     tags: {
       type: [
         {
-          type: String,
+          type: Schema.Types.ObjectId,
           ref: "tags",
         },
       ],
     },
     user: {
-      type: String,
+      type: Schema.Types.ObjectId,
       ref: "user",
       required: [true, "Please provide a user"],
     },
@@ -66,7 +66,7 @@ const entrySchema = new Schema<IEntry>(
 entrySchema.pre(/^find/, function (next) {
   this.populate("user", "-createdAt -updatedAt -__v");
   this.populate("tags", "-createdAt -updatedAt -__v");
-  this.populate("liked_by", "avatar user_name");
+  // this.populate("liked_by", "avatar user_name");
   next();
 });
 
