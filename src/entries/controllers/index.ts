@@ -91,7 +91,8 @@ export const getMyEntries = catchController(
       .select("-__v -user")
       .limit(limit)
       .skip(startIndex)
-      .sort(sort);
+      .sort(sort)
+      .select("-__v -liked_by");
 
     // 
 

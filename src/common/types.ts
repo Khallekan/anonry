@@ -50,7 +50,7 @@ export interface IEntry extends Document {
   tags?: string[];
   user: IUser;
   no_of_likes: number;
-  liked_by: string[];
+  liked_by: string[] | undefined;
   no_of_comments: number;
   edited: boolean;
   published: boolean;

@@ -56,24 +56,21 @@ export const getTimeline = catchController(
 
     entries = await Promise.all(
       entries.map((entry) => {
-        
         // check if the user_id is in the liked_by array
-        const liked_by = entry.liked_by.find((user) => user.toString() === user_id);
-        
+        const liked_by = entry.liked_by?.find((user) => user.toString() === user_id.toString());
+        console.log(liked_by);
+
         if (liked_by) {
           entry.isLiked = true;
         } else {
           entry.isLiked = false;
         }
 
-        console.log(entry.isLiked);
-
+        // omit the liked_by array from the entry object
+        entry.liked_by = undefined;
         return entry;
       })
     );
-
-    console.log(entries);
-    
 
     totalDocuments = await Entry.countDocuments(searchBy);
 

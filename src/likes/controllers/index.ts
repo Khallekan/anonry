@@ -41,14 +41,14 @@ export const handleLikes = catchController(
     }
 
     if (action === "unlike") {
-      if (!entry.liked_by.includes(liked_by)) {
+      if (!entry.liked_by?.includes(liked_by)) {
         return resp
           .setError(StatusCodes.BAD_REQUEST, "Entry is not liked")
           .send(res);
       }
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
       entry.no_of_likes -= 1;
-      entry.liked_by = entry.liked_by.filter(
+      entry.liked_by = entry.liked_by?.filter(
         (user) => user.toString() !== liked_by.toString()
       );
       await entry.save();
@@ -71,7 +71,7 @@ export const handleLikes = catchController(
     }
 
     if (action === "like") {
-      if (entry.liked_by.includes(liked_by)) {
+      if (entry.liked_by?.includes(liked_by)) {
         return resp
           .setError(StatusCodes.BAD_REQUEST, "Entry already liked")
           .send(res);
