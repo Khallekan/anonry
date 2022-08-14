@@ -3,6 +3,8 @@ import userRoutes from "../users/routes";
 import entriesRoutes from "../entries/routes";
 import tagsRoutes from "../tags/routes";
 import bookmarkRoutes from "../bookmarks/routes";
+import timelineRoutes from "../timeline/routes";
+import likesRoutes from "../likes/routes";
 
 const router = Router();
 
@@ -14,4 +16,7 @@ router.use("/tags", tagsRoutes);
 
 router.use("/bookmarks", bookmarkRoutes);
 
+router.use("/timeline", timelineRoutes);
+
+router.use("/likes", likesRoutes);
 export default router;

@@ -4,11 +4,13 @@ import { StatusCodes } from "http-status-codes";
 import ResponseStatus from "../../utils/response";
 import catchController from "../../utils/catchControllerAsyncs";
 import createPageInfo from "../../utils/createPagination";
+import Likes from "../../likes/model/likesModel";
 
 const resp = new ResponseStatus();
 
 export const getTimeline = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
+    const user_id: string = req.user._id;
     let sort: string, limit: number, page: number, totalDocuments: number;
 
     // If page and limit are of invalid types return error
@@ -51,6 +53,27 @@ export const getTimeline = catchController(
       .limit(limit)
       .skip(startIndex)
       .sort(sort);
+
+    entries = await Promise.all(
+      entries.map((entry) => {
+        
+        // check if the user_id is in the liked_by array
+        const liked_by = entry.liked_by.find((user) => user._id === user_id);
+        
+        if (liked_by) {
+          entry.isLiked = true;
+        } else {
+          entry.isLiked = false;
+        }
+
+        console.log(entry.isLiked);
+
+        return entry;
+      })
+    );
+
+    console.log(entries);
+    
 
     totalDocuments = await Entry.countDocuments(searchBy);
 

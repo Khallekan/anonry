@@ -8,11 +8,12 @@ import { StatusCodes } from "http-status-codes";
 import { ObjectId } from "mongodb";
 const resp = new ResponseStatus();
 
-const handleLikes = catchController(
+export const handleLikes = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const liked_by = req.user._id;
 
     const entry_id: undefined | string = req.body.entry_id;
+    const action: "like" | "unlike" | undefined = req.body.action;
 
     if (!entry_id) {
       return resp
@@ -20,7 +21,13 @@ const handleLikes = catchController(
         .send(res);
     }
 
-    const entry = await Entry.findOne({ _id: entry_id, deleted: false });
+    if (!action || !["like", "unlike"].includes(action)) {
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Action is required")
+        .send(res);
+    }
+
+    let entry = await Entry.findOne({ _id: entry_id, deleted: false });
 
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Invalid Id").send(res);
@@ -32,48 +39,32 @@ const handleLikes = catchController(
         .send(res);
     }
 
-    const isLiked = await Likes.findOne({
-      entry: entry_id,
-      liked_by: liked_by,
-    });
-
-    if (isLiked) {
+    if (action === "unlike") {
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
-      const updatedEntry = await Entry.findByIdAndUpdate(
-        entry_id,
-        {
-          $inc: { no_of_likes: -1 },
-          $pull: { liked_by: new ObjectId(liked_by) },
-        },
-        { new: true }
-      ).select("-liked_by");
-
-      if (!updatedEntry) {
-        return resp
-          .setError(StatusCodes.INTERNAL_SERVER_ERROR, "Error updating entry")
-          .send(res);
-      }
+      entry.no_of_likes -= 1;
+      entry.liked_by = entry.liked_by.filter(
+        (user) => user.toString() !== liked_by.toString()
+      );
+      await entry.save();
 
       // delete the like from the likes collection
-      await Likes.findByIdAndDelete(isLiked._id);
+      await Likes.findOneAndDelete({ entry_id, liked_by });
 
       // reduce the no of likes of the user by 1
       await User.findByIdAndUpdate(
-        isLiked.owner,
+        entry.user._id,
         { $inc: { no_of_likes: -1 } },
         { new: true }
       );
 
-      updatedEntry.isLiked = false;
+      entry.isLiked = false;
 
       return resp
-        .setSuccess(
-          StatusCodes.OK,
-          [updatedEntry],
-          "Entry unliked successfully"
-        )
+        .setSuccess(StatusCodes.OK, entry, "Entry unliked successfully")
         .send(res);
     }
+
+    
 
     // if the entry is not liked by the user, then add the like to the likes collection
     const like = await Likes.create({

@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IEntry } from "../../common/types";
+import Likes from "../../likes/model/likesModel";
 
 // create mongoose schema to store blog post
 const entrySchema = new Schema<IEntry>(
@@ -53,6 +54,9 @@ const entrySchema = new Schema<IEntry>(
       type: Boolean,
       default: false,
       select: false,
+    },
+    isLiked: {
+      type: Boolean,
     },
   },
   { timestamps: true }
