@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IEntry } from "../../common/types";
-import Likes from "../../likes/model/likesModel";
-
+import { ObjectId } from "mongodb";
 // create mongoose schema to store blog post
 const entrySchema = new Schema<IEntry>(
   {
@@ -27,7 +26,7 @@ const entrySchema = new Schema<IEntry>(
       ],
     },
     user: {
-      type: String,
+      type: ObjectId,
       ref: "user",
       required: [true, "Please provide a user"],
     },

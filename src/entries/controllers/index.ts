@@ -94,7 +94,7 @@ export const getMyEntries = catchController(
       .sort(sort)
       .select("-__v -liked_by");
 
-    // 
+    //
 
     console.log({ entries });
 
@@ -147,6 +147,8 @@ export const createEntry = catchController(
       description: string;
       tags?: string[];
     }
+
+    console.log(user_id);
 
     const entryDetails: IEntryDetails = {
       user: user_id,

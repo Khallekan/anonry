@@ -28,6 +28,17 @@ export const createUser = catchController(
       });
     }
     const user_name: string = req.body.user_name.trim();
+
+    // if user_name has spaces return error
+    if (user_name.includes(" ")) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        data: {
+          status: StatusCodes.BAD_REQUEST,
+          message: "Please make sure username does not contain spaces",
+        },
+      });
+    }
+
     const email: string = req.body.email.trim();
     const password: string = req.body.password;
     const role = "user";

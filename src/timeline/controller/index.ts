@@ -52,7 +52,8 @@ export const getTimeline = catchController(
     let entries = await Entry.find(searchBy)
       .limit(limit)
       .skip(startIndex)
-      .sort(sort);
+      .sort(sort)
+      .select("-__v")
 
     entries = await Promise.all(
       entries.map((entry) => {
