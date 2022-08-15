@@ -21,13 +21,13 @@ const entrySchema = new Schema<IEntry>(
     tags: {
       type: [
         {
-          type: Schema.Types.ObjectId,
+          type: String,
           ref: "tags",
         },
       ],
     },
     user: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: "user",
       required: [true, "Please provide a user"],
     },
