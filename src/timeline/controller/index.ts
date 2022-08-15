@@ -5,6 +5,7 @@ import ResponseStatus from "../../utils/response";
 import catchController from "../../utils/catchControllerAsyncs";
 import createPageInfo from "../../utils/createPagination";
 import Likes from "../../likes/model/likesModel";
+import Tags from "../../tags/model/tagsModel";
 
 const resp = new ResponseStatus();
 
@@ -50,6 +51,7 @@ export const getTimeline = catchController(
     interface ISearchBy {
       deleted: boolean;
       published: boolean;
+      tags?: { $in: string[] };
     }
 
     // define parameters to search by
@@ -57,6 +59,20 @@ export const getTimeline = catchController(
       deleted: false,
       published: true,
     };
+
+    // if tags are provided, add them to the search object
+    if (req.query.tags) {
+      tags = req.query.tags.split(",");
+      const tagsExist = await Tags.find({ name: { $in: tags } });
+      if (tagsExist.length !== tags.length) {
+        return resp
+          .setError(StatusCodes.NOT_FOUND, "Some tags do not exist")
+          .send(res);
+      }
+      searchBy.tags = { $in: tagsExist.map((tag) => tag._id) };
+    }
+
+    console.log(searchBy);
 
     let entries = await Entry.find(searchBy)
       .limit(limit)
