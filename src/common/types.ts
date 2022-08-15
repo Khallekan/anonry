@@ -47,7 +47,7 @@ export interface IUser extends Document {
 export interface IEntry extends Document {
   title: string;
   description: string;
-  tags?: string[];
+  tags?: ITags[];
   user: IUser;
   no_of_likes: number;
   liked_by: string[] | undefined;
@@ -87,9 +87,9 @@ export interface ITags extends Document {
 }
 
 export interface ILikesModel extends Document {
-  liked_by: string;
-  owner: string;
-  entry: string;
+  liked_by: IUser;
+  owner: IUser;
+  entry: IEntry;
 }
 
 export type ResponseData = Record<string, any> | Record<string, any>[];

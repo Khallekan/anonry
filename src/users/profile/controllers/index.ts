@@ -25,8 +25,10 @@ export const getUserProfile = catchController(
     const entries = await Entry.find({ user: user_id, deleted: false })
       .sort({ createdAt: -1 })
       .limit(3)
-      .select("-__v -user -updatedAt");
+      .select("-__v -user -updatedAt -liked_by");
     user.entries = entries;
+    console.log(user.entries);
+    
 
     return resp.setSuccess(StatusCodes.OK, user, "success").send(res);
   }

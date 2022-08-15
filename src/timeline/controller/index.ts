@@ -11,7 +11,11 @@ const resp = new ResponseStatus();
 export const getTimeline = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
-    let sort: string, limit: number, page: number, totalDocuments: number;
+    let sort: string,
+      limit: number,
+      page: number,
+      totalDocuments: number,
+      tags: string[];
 
     // If page and limit are of invalid types return error
     if (req.query.page && typeof req.query.page != "string") {
@@ -28,6 +32,11 @@ export const getTimeline = catchController(
       return res
         .status(400)
         .json({ success: false, message: "Invalid sort value" });
+    }
+    if (req.query.tags && typeof req.query.tags != "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid tags value" });
     }
 
     limit = req.query.limit ? parseInt(req.query.limit) : 20;
@@ -53,12 +62,14 @@ export const getTimeline = catchController(
       .limit(limit)
       .skip(startIndex)
       .sort(sort)
-      .select("-__v")
+      .select("-__v");
 
     entries = await Promise.all(
       entries.map((entry) => {
         // check if the user_id is in the liked_by array
-        const liked_by = entry.liked_by?.find((user) => user.toString() === user_id.toString());
+        const liked_by = entry.liked_by?.find(
+          (user) => user.toString() === user_id.toString()
+        );
         console.log(liked_by);
 
         if (liked_by) {

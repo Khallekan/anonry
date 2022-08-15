@@ -20,10 +20,11 @@ const entrySchema = new Schema<IEntry>(
     tags: {
       type: [
         {
-          type: String,
+          type: ObjectId,
           ref: "tags",
         },
       ],
+      default: [],
     },
     user: {
       type: ObjectId,
@@ -39,7 +40,7 @@ const entrySchema = new Schema<IEntry>(
       default: false,
     },
     liked_by: {
-      type: [{ type: String, ref: "user" }],
+      type: [{ type: ObjectId, ref: "user" }],
     },
     no_of_comments: {
       type: Number,
