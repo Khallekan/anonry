@@ -1,6 +1,8 @@
 import { Document, Model, Schema } from "mongoose";
 import { Request as REQUEST } from "express";
 
+// Interface for general request object
+
 export interface Request extends REQUEST {
   user: IUser;
 }
@@ -72,6 +74,7 @@ export interface ITask extends Document {
   updatedAt: Date;
 }
 
+// Bookmark Interface
 export interface IBookmark extends Document {
   bookmarked_by: IUser;
   entry: IEntry;
@@ -83,18 +86,30 @@ export interface IUserModel extends Model<IUser> {
   createOTP(): any;
 }
 
+// Tag interface
 export interface ITags extends Document {
   name: string;
 }
 
+// Likes interface
 export interface ILikesModel extends Document {
   liked_by: IUser;
   owner: IUser;
   entry: IEntry;
 }
 
+// Trash Interface
+export interface ITrash extends Document {
+  entry?: IEntry;
+  task?: ITask;
+  type: "entry" | "task";
+  user?: IUser;
+  deleted_at: Date;
+}
+
 export type ResponseData = Record<string, any> | Record<string, any>[];
 
+// Page Info Interface
 export interface IPageInfo {
   totalPages: number;
   totalHits: number;

@@ -1,6 +1,7 @@
 import User from "../../users/model/userModel";
 import Entry from "../model/entriesModel";
 import Tags from "../../tags/model/tagsModel";
+import Trash from "../../trash/model/trashModel";
 import { NextFunction, Response } from "express";
 import { Request } from "../../common/types";
 import { StatusCodes } from "http-status-codes";
@@ -228,6 +229,7 @@ export const deleteEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
     const entry_id: string | undefined = req.params.id;
+    const deleted_at = new Date().toISOString();
 
     console.log(entry_id);
 
@@ -237,10 +239,19 @@ export const deleteEntry = catchController(
         .send(res);
     }
 
-    const entry = await Entry.findOne({ _id: entry_id, user: user_id });
+    const entry = await Entry.findById(entry_id);
 
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+    }
+
+    if (entry.user._id.toString() !== user_id.toString()) {
+      return resp
+        .setError(
+          StatusCodes.UNAUTHORIZED,
+          "You are not authorized to delete this entry"
+        )
+        .send(res);
     }
 
     if (entry.deleted) {
@@ -250,16 +261,33 @@ export const deleteEntry = catchController(
     }
 
     entry.deleted = true;
+    entry.published = false;
     await entry.save();
+
+    // know what to update in the user document
+    interface IUserUpdate {
+      no_of_entries: number;
+      no
+    }
 
     // Update the user's no_of_entries everytime a new entry is deleted
     await User.findByIdAndUpdate(user_id, {
       $inc: { no_of_entries: -1 },
     });
 
-    return resp
-      .setSuccess(StatusCodes.OK, [], "Entry deleted successfully")
+    resp
+      .setSuccess(StatusCodes.OK, null, "Entry moved to trash successfully")
       .send(res);
+
+    await Trash.create({
+      user: user_id,
+      entry: entry_id,
+      deleted_at,
+      type: "entry",
+    });
+
+    console.log("TRASH ITEM CREATED SUCCESSFULLY");
+    return;
   }
 );
 

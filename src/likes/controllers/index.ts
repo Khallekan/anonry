@@ -53,6 +53,13 @@ export const handleLikes = catchController(
       await entry.save();
 
       // delete the like from the likes collection
+
+      entry.isLiked = false;
+
+      resp
+        .setSuccess(StatusCodes.OK, entry, "Entry unliked successfully")
+        .send(res);
+
       await Likes.findOneAndDelete({ entry_id, liked_by });
 
       // reduce the no of likes of the user by 1
@@ -62,11 +69,7 @@ export const handleLikes = catchController(
         { new: true }
       );
 
-      entry.isLiked = false;
-
-      return resp
-        .setSuccess(StatusCodes.OK, entry, "Entry unliked successfully")
-        .send(res);
+      return;
     }
 
     if (action === "like") {
@@ -83,6 +86,13 @@ export const handleLikes = catchController(
       });
 
       // add the user id to the liked_by array in the entry
+
+      entry.isLiked = true;
+
+      resp
+        .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
+        .send(res);
+
       await Entry.findByIdAndUpdate(
         entry_id,
         { $push: { liked_by: liked_by }, $inc: { no_of_likes: 1 } },
@@ -95,11 +105,7 @@ export const handleLikes = catchController(
         { new: true }
       );
 
-      entry.isLiked = true;
-
-      return resp
-        .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
-        .send(res);
+      return;
     }
   }
 );
@@ -160,6 +166,8 @@ export const getLikesPerUser = catchController(
     });
 
     const likes = await Likes.find(searchObj).select("-__v -updatedAt");
+
+    
 
     return resp
       .setSuccess(
