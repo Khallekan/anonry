@@ -41,6 +41,7 @@ const entrySchema = new Schema<IEntry>(
     },
     liked_by: {
       type: [{ type: ObjectId, ref: "user" }],
+      select: false,
     },
     no_of_comments: {
       type: Number,
@@ -55,7 +56,7 @@ const entrySchema = new Schema<IEntry>(
       default: false,
       select: false,
     },
-    permanentlyDeleted: {
+    permanently_deleted: {
       type: Boolean,
       default: false,
       select: false,

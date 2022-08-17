@@ -72,7 +72,9 @@ export const getTimeline = catchController(
       searchBy.tags = { $in: tagsExist.map((tag) => tag._id) };
     }
 
-    console.log(searchBy);
+    console.log({ location: "timeline", searchBy });
+
+    totalDocuments = await Entry.countDocuments(searchBy);
 
     let entries = await Entry.find(searchBy)
       .limit(limit)
@@ -80,27 +82,43 @@ export const getTimeline = catchController(
       .sort(sort)
       .select("-__v");
 
-    entries = await Promise.all(
-      entries.map((entry) => {
-        // check if the user_id is in the liked_by array
-        const liked_by = entry.liked_by?.find(
-          (user) => user.toString() === user_id.toString()
+    // entries = await Promise.all(
+    //   entries.map(async (entry) => {
+    //     // check if the user_id is in the liked_by array
+    //     const liked_by = entry.liked_by?.find(
+    //       (user) => user.toString() === user_id.toString()
+    //     );
+    //     console.log({ liked_by });
+
+    //     if (liked_by) {
+    //       entry.isLiked = true;
+    //     } else {
+    //       entry.isLiked = false;
+    //     }
+
+    //     // omit the liked_by array from the entry object
+    //     entry.liked_by = undefined;
+    //     return entry;
+    //   })
+    // );
+
+    // check if entries are referenced in the likes collection
+    // const likes = await Likes.find({ entry: { $in: await Promise.all(entries.map((entry) => entry._id)) } });
+    const likes = await Likes.find({
+      entry: { $in: entries.map((entry) => entry._id) },
+      liked_by: user_id,
+    });
+
+    if (likes.length > 0) {
+      likes.forEach((like) => {
+        const entry = entries.find(
+          (entry) => entry._id.toString() === like.entry._id.toString()
         );
-        console.log(liked_by);
-
-        if (liked_by) {
+        if (entry) {
           entry.isLiked = true;
-        } else {
-          entry.isLiked = false;
         }
-
-        // omit the liked_by array from the entry object
-        entry.liked_by = undefined;
-        return entry;
-      })
-    );
-
-    totalDocuments = await Entry.countDocuments(searchBy);
+      });
+    }
 
     const pageInfo = createPageInfo({
       page,

@@ -2,6 +2,7 @@ import User from "../../users/model/userModel";
 import Entry from "../model/entriesModel";
 import Tags from "../../tags/model/tagsModel";
 import Trash from "../../trash/model/trashModel";
+import Likes from "../../likes/model/likesModel";
 import { NextFunction, Response } from "express";
 import { Request } from "../../common/types";
 import { StatusCodes } from "http-status-codes";
@@ -14,11 +15,6 @@ const resp = new ResponseStatus();
 export const getMyEntries = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
-    if (!user_id) {
-      return resp
-        .setError(StatusCodes.BAD_REQUEST, "User id is required")
-        .send(res);
-    }
 
     let limit: number, page: number, sort: string, totalDocuments: number;
 
@@ -55,12 +51,14 @@ export const getMyEntries = catchController(
     interface ISearchObject {
       user: string;
       deleted: boolean;
+      permanently_deleted: { $in: (false | undefined | null)[] };
       published?: { $in: (boolean | undefined | null)[] };
     }
 
     const searchObj: ISearchObject = {
       user: user_id,
       deleted: false,
+      permanently_deleted: { $in: [false, undefined, null] },
     };
 
     if (req.query.published && typeof req.query.published == "string") {
@@ -267,7 +265,7 @@ export const deleteEntry = catchController(
     // know what to update in the user document
     interface IUserUpdate {
       no_of_entries: number;
-      no
+      no;
     }
 
     // Update the user's no_of_entries everytime a new entry is deleted
@@ -287,6 +285,14 @@ export const deleteEntry = catchController(
     });
 
     console.log("TRASH ITEM CREATED SUCCESSFULLY");
+
+    await Likes.updateMany(
+      { entry: entry._id },
+      { $set: { entry_deleted: true } }
+    );
+
+    console.log("LIKES UPDATED SUCCESSFULLY");
+
     return;
   }
 );

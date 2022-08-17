@@ -57,7 +57,7 @@ export interface IEntry extends Document {
   edited: boolean;
   published: boolean;
   deleted: boolean;
-  permanentlyDeleted: boolean;
+  permanently_deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
   isLiked?: boolean;
@@ -96,6 +96,7 @@ export interface ILikesModel extends Document {
   liked_by: IUser;
   owner: IUser;
   entry: IEntry;
+  entry_deleted: boolean;
 }
 
 // Trash Interface

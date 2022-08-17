@@ -6,6 +6,7 @@ import ResponseStatus from "../../utils/response";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import createPageInfo from "../../utils/createPagination";
+import { IUser } from "../../common/types";
 const resp = new ResponseStatus();
 
 export const handleLikes = catchController(
@@ -39,17 +40,16 @@ export const handleLikes = catchController(
         .send(res);
     }
 
+    const isLiked = await Likes.findOne({ entry: entry_id, liked_by });
+
     if (action === "unlike") {
-      if (!entry.liked_by?.includes(liked_by)) {
+      if (!isLiked) {
         return resp
           .setError(StatusCodes.BAD_REQUEST, "Entry is not liked")
           .send(res);
       }
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
       entry.no_of_likes -= 1;
-      entry.liked_by = entry.liked_by?.filter(
-        (user) => user.toString() !== liked_by.toString()
-      );
       await entry.save();
 
       // delete the like from the likes collection
@@ -73,7 +73,7 @@ export const handleLikes = catchController(
     }
 
     if (action === "like") {
-      if (entry.liked_by?.includes(liked_by)) {
+      if (isLiked) {
         return resp
           .setError(StatusCodes.BAD_REQUEST, "Entry already liked")
           .send(res);
@@ -93,9 +93,12 @@ export const handleLikes = catchController(
         .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
         .send(res);
 
+      // for future reference, if we want to add the user id to the liked_by array in the entry
+      // $push: { liked_by: liked_by },
+
       await Entry.findByIdAndUpdate(
         entry_id,
-        { $push: { liked_by: liked_by }, $inc: { no_of_likes: 1 } },
+        { $inc: { no_of_likes: 1 } },
         { new: true }
       );
 
@@ -114,7 +117,7 @@ export const getLikesPerUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_name: string | undefined = req.params.user_id;
     console.log("HIT");
-
+    let user: IUser;
     let user_id: string;
     if (user_name) {
       const user = await User.findOne({ user_name });
@@ -152,9 +155,13 @@ export const getLikesPerUser = catchController(
 
     interface ISearchObj {
       liked_by: string;
+      entry_deleted: { $in: (boolean | undefined | null)[] };
     }
 
-    const searchObj: ISearchObj = { liked_by: user_id };
+    const searchObj: ISearchObj = {
+      liked_by: user_id,
+      entry_deleted: { $in: [false, undefined, null] },
+    };
 
     totalDocuments = await Likes.countDocuments(searchObj);
 
@@ -166,8 +173,6 @@ export const getLikesPerUser = catchController(
     });
 
     const likes = await Likes.find(searchObj).select("-__v -updatedAt");
-
-    
 
     return resp
       .setSuccess(
