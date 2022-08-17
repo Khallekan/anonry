@@ -7,6 +7,7 @@ import Likes from "../../likes/model/likesModel";
 import Entry from "../../entries/model/entriesModel";
 import { StatusCodes } from "http-status-codes";
 import User from "../../users/model/userModel";
+import { ObjectId } from "mongodb";
 
 const resp = new ResponseStatus();
 
@@ -107,6 +108,10 @@ export const restoreTrash = catchController(
 
     const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
 
+    console.log({ trashItem });
+
+    console.log(trashItem.length !== trash_id.length);
+
     if (trashItem.length !== trash_id.length) {
       return resp
         .setError(StatusCodes.NOT_FOUND, "Some Items are not in your trash")
@@ -135,9 +140,19 @@ export const restoreTrash = catchController(
       .setSuccess(StatusCodes.OK, null, "Entries restored successfully")
       .send(res);
 
-    await User.findByIdAndUpdate(user, {
-      $inc: { no_of_entries: entries.length },
-    });
+    const entriesLength = entries.length;
+
+    const data = await User.findByIdAndUpdate(
+      user,
+      {
+        $inc: { no_of_entries: entriesLength },
+      },
+      { new: true }
+    );
+
+    console.log({ data });
+
+    await Trash.deleteMany({ _id: { $in: trash_id } });
 
     await Likes.updateMany(
       { entry: { $in: entries.map((entry) => entry._id) } },

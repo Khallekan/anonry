@@ -262,9 +262,20 @@ export const deleteEntry = catchController(
     entry.published = false;
     await entry.save();
 
+    // know what to update
+    const update: {
+      $inc: { no_of_entries: number; no_of_published_entries?: number };
+    } = {
+      $inc: { no_of_entries: -1 },
+    };
+
+    if (entry.published) {
+      update.$inc.no_of_published_entries = -1;
+    }
+
     // Update the user's no_of_entries everytime a new entry is deleted
     await User.findByIdAndUpdate(user_id, {
-      $inc: { no_of_entries: -1 },
+      update,
     });
 
     resp

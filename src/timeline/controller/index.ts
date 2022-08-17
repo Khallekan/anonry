@@ -82,28 +82,6 @@ export const getTimeline = catchController(
       .sort(sort)
       .select("-__v");
 
-    // entries = await Promise.all(
-    //   entries.map(async (entry) => {
-    //     // check if the user_id is in the liked_by array
-    //     const liked_by = entry.liked_by?.find(
-    //       (user) => user.toString() === user_id.toString()
-    //     );
-    //     console.log({ liked_by });
-
-    //     if (liked_by) {
-    //       entry.isLiked = true;
-    //     } else {
-    //       entry.isLiked = false;
-    //     }
-
-    //     // omit the liked_by array from the entry object
-    //     entry.liked_by = undefined;
-    //     return entry;
-    //   })
-    // );
-
-    // check if entries are referenced in the likes collection
-    // const likes = await Likes.find({ entry: { $in: await Promise.all(entries.map((entry) => entry._id)) } });
     const likes = await Likes.find({
       entry: { $in: entries.map((entry) => entry._id) },
       liked_by: user_id,

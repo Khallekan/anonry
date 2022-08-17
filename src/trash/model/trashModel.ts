@@ -10,15 +10,15 @@ const trashModel = new Schema<ITrash>(
     },
     entry: {
       type: Schema.Types.ObjectId,
-      ref: "entry",
+      ref: "entries",
     },
     task: {
       type: Schema.Types.ObjectId,
-      ref: "task",
+      ref: "tasks",
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: "user",
+      ref: "users",
       required: [true, "Please provide a user"],
     },
     deleted_at: {
