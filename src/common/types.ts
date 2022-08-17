@@ -55,6 +55,7 @@ export interface IEntry extends Document {
   edited: boolean;
   published: boolean;
   deleted: boolean;
+  permanentlyDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
   isLiked?: boolean;

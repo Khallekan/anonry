@@ -237,15 +237,20 @@ export const deleteEntry = catchController(
         .send(res);
     }
 
-    const entry = await Entry.findOneAndUpdate(
-      { _id: entry_id, user: user_id },
-      { deleted: true },
-      { new: true }
-    );
+    const entry = await Entry.findOne({ _id: entry_id, user: user_id });
 
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
     }
+
+    if (entry.deleted) {
+      return resp
+        .setError(StatusCodes.BAD_REQUEST, "Entry already deleted")
+        .send(res);
+    }
+
+    entry.deleted = true;
+    await entry.save();
 
     // Update the user's no_of_entries everytime a new entry is deleted
     await User.findByIdAndUpdate(user_id, {

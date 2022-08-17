@@ -55,6 +55,11 @@ const entrySchema = new Schema<IEntry>(
       default: false,
       select: false,
     },
+    permanentlyDeleted: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
     isLiked: {
       type: Boolean,
     },
