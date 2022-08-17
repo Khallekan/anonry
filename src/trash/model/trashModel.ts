@@ -29,4 +29,15 @@ const trashModel = new Schema<ITrash>(
   { timestamps: true }
 );
 
+trashModel.pre(/^find/, function (next) {
+  // select only the avatar user_name and _id when populating
+  this.populate(
+    "entry",
+    "+title +description +tags +no_of_likes -user -liked_by -no_of_comments -__v"
+  );
+  this.populate("task");
+
+  next();
+});
+
 export default model<ITrash>("trash", trashModel);
