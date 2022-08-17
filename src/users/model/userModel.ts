@@ -29,6 +29,13 @@ const userSchema = new Schema<IUser>(
       unique: true,
       sparse: true,
       lowercase: true,
+      // check if username has spaces
+      validate: {
+        validator: function (v: string) {
+          return !v.includes(" ");
+        },
+        message: "Username cannot contain spaces and must be unique",
+      },
     },
     role: {
       type: String,
@@ -37,6 +44,14 @@ const userSchema = new Schema<IUser>(
     },
     avatar: {
       type: String,
+      required: [true, "Please provide a avatar"],
+      // check if string starts with https://robohash.org/
+      validate: {
+        validator: (value: string) => {
+          return value.startsWith("https://robohash.org/");
+        },
+        message: "Please provide a valid avatar",
+      },
     },
     verified: {
       type: Boolean,
