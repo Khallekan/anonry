@@ -5,6 +5,7 @@ import User from "../../users/model/userModel";
 import ResponseStatus from "../../utils/response";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
+import createPageInfo from "../../utils/createPagination";
 const resp = new ResponseStatus();
 
 export const handleLikes = catchController(
@@ -102,3 +103,55 @@ export const handleLikes = catchController(
     }
   }
 );
+
+export const getLikes = catchController(async (req: Request, res: Response) => {
+  const user_id = req.user._id;
+  let page: number, limit: number, sort: string, totalDocuments: number;
+
+  if (req.query.page && typeof req.query.page != "string") {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, "Page must be a string")
+      .send(res);
+  }
+  if (req.query.limit && typeof req.query.limit != "string") {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, "Limit must be a string")
+      .send(res);
+  }
+  if (req.query.sort && typeof req.query.sort != "string") {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, "Sort must be a string")
+      .send(res);
+  }
+
+  page = req.query.page ? parseInt(req.query.page) : 1;
+  limit = req.query.limit ? parseInt(req.query.limit) : 20;
+  sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
+
+  const startIndex = (page - 1) * limit;
+
+  interface ISearchObj {
+    liked_by: string;
+  }
+
+  const searchObj: ISearchObj = { liked_by: user_id };
+
+  totalDocuments = await Likes.countDocuments(searchObj);
+
+  const pageInfo = createPageInfo({
+    page,
+    limit,
+    startIndex,
+    totalDocuments,
+  });
+
+  const likes = await Likes.find(searchObj);
+
+  return resp
+    .setSuccess(
+      StatusCodes.OK,
+      { likes, pageInfo },
+      "Likes retrieved successfully"
+    )
+    .send(res);
+});
