@@ -1,15 +1,15 @@
 import { Response, NextFunction, Request } from "express";
 import isEmail from "validator/lib/isEmail";
-import User from "../../model/userModel";
+import User from "../../users/model/userModel";
 import {
   sendLoginEmail,
   sendOTP,
   sendPasswordChanged,
   sendPasswordResetLink,
-} from "../../../helperService/emailService";
+} from "../../helperService/emailService";
 import { StatusCodes } from "http-status-codes";
-import catchController from "../../../utils/catchControllerAsyncs";
-import generateToken from "../../../utils/generateToken";
+import catchController from "../../utils/catchControllerAsyncs";
+import generateToken from "../../utils/generateToken";
 
 export const createUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
