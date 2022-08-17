@@ -94,129 +94,99 @@ export const getTrash = catchController(
   }
 );
 
-const getModel = (type: "entry" | "task") => {
-  if (type === "entry") {
-    return Entry;
-  }
-  if (type === "task") {
-    return Entry;
-  }
-
-  return null;
-};
-
 export const restoreTrash = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user._id;
-    const trash_id: string | undefined = req.params.id;
+    const trash_id: string[] | undefined = req.body.trash;
 
-    if (!trash_id) {
+    if (!trash_id || !trash_id.length) {
       return resp
         .setError(StatusCodes.BAD_REQUEST, "Trash Id missing")
         .send(res);
     }
 
-    const trashItem = await Trash.findById(trash_id);
+    const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
 
-    if (!trashItem) {
-      return resp.setError(StatusCodes.NOT_FOUND, "Trash not found").send(res);
-    }
-    const type = trashItem.type;
-    const Model = getModel(type);
-
-    if (!Model) {
-      console.log({ error: "ERROR FINDING MODEL" });
-
+    if (trashItem.length !== trash_id.length) {
       return resp
-        .setError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong")
+        .setError(StatusCodes.NOT_FOUND, "Some Items are not in your trash")
         .send(res);
     }
 
-    if (type === "entry") {
-      const entry = await Model.findOne({
-        user,
-        _id: trashItem.entry,
-        permanently_deleted: { $in: [null, false, undefined] },
-      });
+    const entries = await Entry.find({
+      _id: { $in: trashItem.map((trash) => trash.entry) },
+      user,
+      deleted: true,
+      permanently_deleted: false,
+    });
 
-      if (!entry) {
-        return resp
-          .setError(StatusCodes.NOT_FOUND, "Entry not found")
-          .send(res);
-      }
+    if (entries.length !== trashItem.length) {
+      return resp
+        .setError(StatusCodes.NOT_FOUND, "Some entries are not found")
+        .send(res);
+    }
 
-      if (!entry.deleted) {
-        return resp
-          .setError(StatusCodes.BAD_REQUEST, "Entry is not deleted")
-          .send(res);
-      }
-
+    await entries.forEach(async (entry) => {
       entry.deleted = false;
       await entry.save();
-      resp
-        .setSuccess(StatusCodes.OK, entry, "Entry restored successfully")
-        .send(res);
+    });
 
-      await User.findByIdAndUpdate(user, {
-        $inc: { no_of_entries: 1 },
-      });
+    resp
+      .setSuccess(StatusCodes.OK, null, "Entries restored successfully")
+      .send(res);
 
-      await Likes.updateMany(
-        { entry: entry._id },
-        { $set: { entry_deleted: false } }
-      );
-    }
+    await User.findByIdAndUpdate(user, {
+      $inc: { no_of_entries: entries.length },
+    });
+
+    await Likes.updateMany(
+      { entry: { $in: entries.map((entry) => entry._id) } },
+      { $set: { entry_deleted: false } }
+    );
   }
 );
 
 export const deleteTrash = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user._id;
-    const trash_id: string | undefined = req.params.id;
+    const trash_id: string[] | undefined = req.body.trash;
 
-    if (!trash_id) {
+    if (!trash_id || !trash_id.length) {
       return resp
         .setError(StatusCodes.BAD_REQUEST, "Trash Id missing")
         .send(res);
     }
 
-    const trashItem = await Trash.findById(trash_id);
+    const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
 
-    if (!trashItem) {
-      return resp.setError(StatusCodes.NOT_FOUND, "Trash not found").send(res);
-    }
-    const type = trashItem.type;
-    const Model = getModel(type);
-
-    if (!Model) {
-      console.log({ error: "ERROR FINDING MODEL" });
-
+    if (trashItem.length !== trash_id.length) {
       return resp
-        .setError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong")
+        .setError(StatusCodes.NOT_FOUND, "Some items are not in your trash")
         .send(res);
     }
 
-    if (type === "entry") {
-      const entry = await Model.findOne({
-        user,
-        _id: trashItem.entry,
-        permanently_deleted: { $in: [null, false, undefined] },
-      });
+    const entry = await Entry.find({
+      user,
+      _id: { $in: trashItem.map((trash) => trash.entry) },
+      permanently_deleted: { $in: [null, false, undefined] },
+    });
 
-      if (!entry) {
-        return resp
-          .setError(StatusCodes.NOT_FOUND, "Entry not found")
-          .send(res);
-      }
+    if (entry.length !== trashItem.length) {
+      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+    }
 
+    await entry.forEach(async (entry) => {
       entry.permanently_deleted = true;
       await entry.save();
-      resp
-        .setSuccess(StatusCodes.OK, entry, "Entry deleted successfully")
-        .send(res);
+    });
 
-      Trash.findOneAndDelete({ _id: trash_id });
-      return;
-    }
+    resp
+      .setSuccess(StatusCodes.OK, null, "Entries deleted successfully")
+      .send(res);
+
+    await Trash.deleteMany({
+      _id: { $in: trashItem.map((trash) => trash._id) },
+    });
+    return;
   }
 );
