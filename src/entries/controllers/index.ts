@@ -262,12 +262,6 @@ export const deleteEntry = catchController(
     entry.published = false;
     await entry.save();
 
-    // know what to update in the user document
-    interface IUserUpdate {
-      no_of_entries: number;
-      no;
-    }
-
     // Update the user's no_of_entries everytime a new entry is deleted
     await User.findByIdAndUpdate(user_id, {
       $inc: { no_of_entries: -1 },
