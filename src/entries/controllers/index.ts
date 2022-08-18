@@ -115,12 +115,22 @@ export const getSingleEntry = catchController(
         .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
         .send(res);
     }
-    const entry = await Entry.findOne({ _id: entry_id, deleted: false }).select(
-      "-__v"
-    );
+    const entry = await Entry.findOne({ _id: entry_id }).select("-__v");
+
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
     }
+
+    if (entry.deleted) {
+      return resp
+        .setError(StatusCodes.NOT_FOUND, "Cannot view deleted entry")
+        .send(res);
+    }
+
+    if (entry.permanently_deleted) {
+      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+    }
+
     return resp
       .setSuccess(StatusCodes.OK, entry, "Entry fetched successfully")
       .send(res);
