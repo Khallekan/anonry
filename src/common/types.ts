@@ -97,6 +97,7 @@ export interface ILikesModel extends Document {
   owner: IUser;
   entry: IEntry;
   entry_deleted: boolean;
+  entry_unpublished: boolean;
 }
 
 // Trash Interface

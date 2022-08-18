@@ -50,14 +50,14 @@ export const getMyEntries = catchController(
 
     interface ISearchObject {
       user: string;
-      deleted: boolean;
+      deleted: { $in: (false | undefined | null)[] };
       permanently_deleted: { $in: (false | undefined | null)[] };
       published?: { $in: (boolean | undefined | null)[] };
     }
 
     const searchObj: ISearchObject = {
       user: user_id,
-      deleted: false,
+      deleted: { $in: [false, undefined, null] },
       permanently_deleted: { $in: [false, undefined, null] },
     };
 
@@ -186,6 +186,7 @@ export const createEntry = catchController(
     await User.findByIdAndUpdate(user_id, {
       $inc: { no_of_entries: 1 },
     });
+    return;
   }
 );
 
@@ -229,7 +230,7 @@ export const deleteEntry = catchController(
     const entry_id: string | undefined = req.params.id;
     const deleted_at = new Date().toISOString();
 
-    console.log(entry_id);
+    console.log({ entry_id });
 
     if (!entry_id) {
       return resp
@@ -293,7 +294,7 @@ export const deleteEntry = catchController(
 
     await Likes.updateMany(
       { entry: entry._id },
-      { $set: { entry_deleted: true } }
+      { $set: { entry_deleted: true, entry_unpublished: true } }
     );
 
     console.log("LIKES UPDATED SUCCESSFULLY");
@@ -325,11 +326,18 @@ export const publishEntry = catchController(
       const entry = await Entry.findOne({
         _id: entry_id,
         user: user_id,
+        permanently_deleted: { $in: [false, undefined, null] },
       }).select("-__v -user");
 
       if (!entry) {
         return resp
           .setError(StatusCodes.NOT_FOUND, "Entry not found")
+          .send(res);
+      }
+
+      if (entry.deleted) {
+        return resp
+          .setError(StatusCodes.FORBIDDEN, "Cannot publish a deleted entry")
           .send(res);
       }
 
@@ -349,6 +357,16 @@ export const publishEntry = catchController(
       await User.findByIdAndUpdate(user_id, {
         $inc: { no_of_published_entries: 1 },
       });
+
+      console.log("SUCCESS UPDATING USERS AFTER PUBLISH");
+
+      if (entry.no_of_likes > 0) {
+        await Likes.updateMany(
+          { entry: entry._id },
+          { $set: { entry_unpublished: false, entry_deleted: false } }
+        );
+        console.log("SUCCESS LIKES AFTER PUBLISHING ENTRY");
+      }
 
       return;
     }
@@ -383,6 +401,16 @@ export const publishEntry = catchController(
       await User.findByIdAndUpdate(user_id, {
         $inc: { no_of_published_entries: -1 },
       });
+
+      console.log("SUCCESS UPDATING USER AFTER UNPUBLISHING");
+
+      await Likes.updateMany(
+        { entry: entry._id },
+        { $set: { entry_unpublished: true } }
+      );
+
+      console.log("SUCCESS UPDATING LIKES AFTER UNPUBLISHING");
+
       return;
     }
   }

@@ -156,11 +156,13 @@ export const getLikesPerUser = catchController(
     interface ISearchObj {
       liked_by: string;
       entry_deleted: { $in: (boolean | undefined | null)[] };
+      entry_unpublished: { $in: (boolean | undefined | null)[] };
     }
 
     const searchObj: ISearchObj = {
       liked_by: user_id,
       entry_deleted: { $in: [false, undefined, null] },
+      entry_unpublished: { $in: [false, undefined, null] },
     };
 
     totalDocuments = await Likes.countDocuments(searchObj);

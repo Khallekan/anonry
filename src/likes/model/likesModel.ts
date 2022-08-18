@@ -20,6 +20,10 @@ const likesModel = new Schema<ILikesModel>(
       type: Boolean,
       default: false,
     },
+    entry_unpublished: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -47,7 +47,10 @@ export const createUser = catchController(
     const avatar = `https://robohash.org/${user_name}?set=${randomNumber}&size=500x500`;
     const link: string = req.body.link;
     // make sure password is at least 8 characters long and contains a number a lowercase letter and an uppercase letter
-    if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/)) {
+    // regex for password validation - at least 8 characters long and has at least one lowercase letter, at least one uppercase letter and at least one number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
+
+    if (!password.match(passwordRegex)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
