@@ -110,6 +110,8 @@ export const restoreTrash = catchController(
 
     console.log({ trashItem });
 
+    console.log(trashItem.length !== trash_id.length);
+
     if (trashItem.length !== trash_id.length) {
       return resp
         .setError(StatusCodes.NOT_FOUND, "Some Items are not in your trash")
@@ -120,7 +122,7 @@ export const restoreTrash = catchController(
       _id: { $in: trashItem.map((trash) => trash.entry) },
       user,
       deleted: true,
-      permanently_deleted: false,
+      permanently_deleted: { $in: [false, null, undefined] },
     });
 
     if (entries.length !== trashItem.length) {
@@ -140,13 +142,17 @@ export const restoreTrash = catchController(
 
     const entriesLength = entries.length;
 
-    const data = await User.findByIdAndUpdate(
-      user,
-      {
-        $inc: { no_of_entries: entriesLength },
+    const update: {
+      $inc: { no_of_entries: number };
+    } = {
+      $inc: {
+        no_of_entries: entriesLength,
       },
-      { new: true }
-    );
+    };
+
+    console.log({ update });
+
+    const data = await User.findByIdAndUpdate(user, update, { new: true });
 
     console.log({ data });
 

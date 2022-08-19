@@ -115,7 +115,9 @@ export const getSingleEntry = catchController(
         .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
         .send(res);
     }
-    const entry = await Entry.findOne({ _id: entry_id }).select("-__v");
+    const entry = await Entry.findOne({ _id: entry_id }).select(
+      "-__v +deleted"
+    );
 
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
@@ -248,7 +250,9 @@ export const deleteEntry = catchController(
         .send(res);
     }
 
-    const entry = await Entry.findById(entry_id);
+    const entry = await Entry.findById(entry_id).select(
+      "+deleted +permanently_deleted"
+    );
 
     if (!entry) {
       return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
@@ -264,6 +268,8 @@ export const deleteEntry = catchController(
     }
 
     if (entry.deleted) {
+      console.log("HERE");
+
       return resp
         .setError(StatusCodes.BAD_REQUEST, "Entry already deleted")
         .send(res);
@@ -273,29 +279,22 @@ export const deleteEntry = catchController(
     entry.published = false;
     await entry.save();
 
-    // know what to update in the user
-    const update: {
-      $inc: {
-        no_of_entries: number;
-        no_of_published_entries?: number;
-        no_of_likes?: number;
-      };
-    } = {
-      $inc: { no_of_entries: -1 },
-    };
-
-    if (entry.published) {
-      update.$inc.no_of_published_entries = -1;
-    }
-
-    if (entry.no_of_likes) {
-      update.$inc.no_of_likes = -entry.no_of_likes;
-    }
-
     // Update the user's no_of_entries everytime a new entry is deleted
-    await User.findByIdAndUpdate(user_id, {
-      update,
-    });
+    const userToUpdate = await User.findById(user_id);
+
+    if (userToUpdate) {
+      userToUpdate.no_of_entries -= 1;
+
+      if (entry.published) {
+        userToUpdate.no_of_published_entries -= 1;
+      }
+
+      if (entry.no_of_likes) {
+        userToUpdate.no_of_likes -= entry.no_of_likes;
+      }
+
+      userToUpdate.save();
+    }
 
     resp
       .setSuccess(StatusCodes.OK, null, "Entry moved to trash successfully")
@@ -345,7 +344,7 @@ export const publishEntry = catchController(
         _id: entry_id,
         user: user_id,
         permanently_deleted: { $in: [false, undefined, null] },
-      }).select("-__v -user");
+      }).select("-__v -user +deleted");
 
       if (!entry) {
         return resp
@@ -371,24 +370,25 @@ export const publishEntry = catchController(
         .setSuccess(StatusCodes.OK, entry, "Entry published successfully")
         .send(res);
 
-      // Update the user's no_of_published_entries everytime a new entry is published
-      await User.findByIdAndUpdate(user_id, {
-        $inc: { no_of_published_entries: 1 },
-      });
-
-      console.log("SUCCESS UPDATING USERS AFTER PUBLISH");
-
       if (entry.no_of_likes > 0) {
         await Likes.updateMany(
           { entry: entry._id },
           { $set: { entry_unpublished: false, entry_deleted: false } }
         );
         console.log("SUCCESS LIKES AFTER PUBLISHING ENTRY");
-
-        await User.findByIdAndUpdate(user_id, {
-          $inc: { no_of_likes: entry.no_of_likes },
-        });
       }
+
+      // Update the user's no_of_published_entries everytime a new entry is published
+      const userToUpdate = await User.findById(user_id);
+      if (userToUpdate) {
+        userToUpdate.no_of_published_entries += 1;
+        if (entry.no_of_likes) {
+          userToUpdate.no_of_likes += entry.no_of_likes;
+        }
+        userToUpdate.save();
+      }
+
+      console.log("SUCCESS UPDATING USERS AFTER PUBLISH");
 
       return;
     }
@@ -420,9 +420,12 @@ export const publishEntry = catchController(
         .send(res);
 
       // Update the user's no_of_published_entries everytime a new entry is unpublished
-      await User.findByIdAndUpdate(user_id, {
-        $inc: { no_of_published_entries: -1 },
-      });
+      const userToUpdate = await User.findById(user_id);
+      if (userToUpdate) {
+        userToUpdate.no_of_published_entries -= 1;
+        userToUpdate.no_of_likes -= entry.no_of_likes;
+        userToUpdate.save();
+      }
 
       console.log("SUCCESS UPDATING USER AFTER UNPUBLISHING");
 
