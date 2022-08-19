@@ -164,13 +164,18 @@ export const restoreTrash = catchController(
 export const deleteTrash = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user._id;
-    const trash_id: string[] | undefined = req.body.trash;
+    let trash_id: string[];
 
-    if (!trash_id || !trash_id.length) {
+    if (!req.query.trash || typeof req.query.trash != "string") {
       return resp
         .setError(StatusCodes.BAD_REQUEST, "Trash Id missing")
         .send(res);
     }
+
+    // regex that matches space
+    const spaceRegex = /\s/g;
+
+    trash_id = req.query.trash.trim().replace(spaceRegex, "").split(",");
 
     const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
 

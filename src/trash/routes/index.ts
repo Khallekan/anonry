@@ -8,6 +8,6 @@ router
   .route("/")
   .get(verifyToken, getTrash)
   .patch(verifyToken, restoreTrash)
-  .delete(verifyToken, deleteTrash);
+  .put(verifyToken, deleteTrash);
 
 export default router;
