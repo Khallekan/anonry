@@ -120,7 +120,7 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
     },
-    no_of_bookmarks: {
+    no_of_likes_given: {
       type: Number,
       default: 0,
     },

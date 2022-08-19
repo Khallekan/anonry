@@ -69,6 +69,12 @@ export const handleLikes = catchController(
         { new: true }
       );
 
+      await User.findByIdAndUpdate(
+        liked_by,
+        { $inc: { no_of_likes_given: -1 } },
+        { new: true }
+      );
+
       return;
     }
 
@@ -105,6 +111,12 @@ export const handleLikes = catchController(
       await User.findByIdAndUpdate(
         entry.user._id,
         { $inc: { no_of_likes: 1 } },
+        { new: true }
+      );
+
+      await User.findByIdAndUpdate(
+        liked_by,
+        { $inc: { no_of_likes_given: 1 } },
         { new: true }
       );
 

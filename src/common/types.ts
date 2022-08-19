@@ -31,7 +31,7 @@ export interface IUser extends Document {
   deactivated_at: Date;
   no_of_likes: number;
   no_of_dislikes: number;
-  no_of_bookmarks: number;
+  no_of_likes_given: number;
   no_of_comments: number;
   no_of_published_entries: number;
   no_of_notes: number;
