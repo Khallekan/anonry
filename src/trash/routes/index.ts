@@ -10,4 +10,6 @@ router
   .patch(verifyToken, restoreTrash)
   .put(verifyToken, deleteTrash);
 
+
+router.route("/empty")
 export default router;

@@ -110,8 +110,6 @@ export const restoreTrash = catchController(
 
     console.log({ trashItem });
 
-    console.log(trashItem.length !== trash_id.length);
-
     if (trashItem.length !== trash_id.length) {
       return resp
         .setError(StatusCodes.NOT_FOUND, "Some Items are not in your trash")
@@ -208,5 +206,65 @@ export const deleteTrash = catchController(
       _id: { $in: trashItem.map((trash) => trash._id) },
     });
     return;
+  }
+);
+
+export const restoreAll = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user._id;
+
+    const trashItems = await Trash.find({ user: user });
+
+    if (!trashItems.length) {
+      return resp
+        .setError(
+          StatusCodes.NOT_ACCEPTABLE,
+          "Your trash is empty anonymous one!"
+        )
+        .send(res);
+    }
+
+    const entries = await Entry.find({
+      _id: { $in: trashItems.map((trash) => trash.entry) },
+      user,
+      deleted: true,
+      permanently_deleted: false,
+    });
+
+    if (entries.length !== trashItems.length) {
+      return resp
+        .setError(StatusCodes.NOT_FOUND, "Some entries are not found")
+        .send(res);
+    }
+
+    await entries.forEach(async (entry) => {
+      entry.deleted = false;
+      await entry.save();
+    });
+
+    resp
+      .setSuccess(StatusCodes.OK, null, "Entries restored successfully")
+      .send(res);
+
+    const entriesLength = entries.length;
+
+    const data = await User.findByIdAndUpdate(
+      user,
+      {
+        $inc: { no_of_entries: entriesLength },
+      },
+      { new: true }
+    );
+
+    console.log({ data });
+
+    await Trash.deleteMany({
+      _id: { $in: trashItems.map((item) => item._id) },
+    });
+
+    await Likes.updateMany(
+      { entry: { $in: entries.map((entry) => entry._id) } },
+      { $set: { entry_deleted: false } }
+    );
   }
 );

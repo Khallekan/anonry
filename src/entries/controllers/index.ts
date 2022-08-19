@@ -273,15 +273,23 @@ export const deleteEntry = catchController(
     entry.published = false;
     await entry.save();
 
-    // know what to update
+    // know what to update in the user
     const update: {
-      $inc: { no_of_entries: number; no_of_published_entries?: number };
+      $inc: {
+        no_of_entries: number;
+        no_of_published_entries?: number;
+        no_of_likes?: number;
+      };
     } = {
       $inc: { no_of_entries: -1 },
     };
 
     if (entry.published) {
       update.$inc.no_of_published_entries = -1;
+    }
+
+    if (entry.no_of_likes) {
+      update.$inc.no_of_likes = -entry.no_of_likes;
     }
 
     // Update the user's no_of_entries everytime a new entry is deleted
@@ -376,6 +384,10 @@ export const publishEntry = catchController(
           { $set: { entry_unpublished: false, entry_deleted: false } }
         );
         console.log("SUCCESS LIKES AFTER PUBLISHING ENTRY");
+
+        await User.findByIdAndUpdate(user_id, {
+          $inc: { no_of_likes: entry.no_of_likes },
+        });
       }
 
       return;
