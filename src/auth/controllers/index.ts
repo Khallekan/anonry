@@ -10,6 +10,10 @@ import {
 import { StatusCodes } from "http-status-codes";
 import catchController from "../../utils/catchControllerAsyncs";
 import generateToken from "../../utils/generateToken";
+import ResponseStatus from "../../utils/response";
+import jwt from "jsonwebtoken";
+
+const resp = new ResponseStatus();
 
 export const createUser = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -498,5 +502,31 @@ export const updatePassword = catchController(
       "Enjoy the App anonymous one!"
     );
     return;
+  }
+);
+
+export const getAccessToken = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { refreshToken } = req.body;
+    console.log("refresh token", req.body);
+    if (!refreshToken)
+      return resp.setError(400, "refresh token is missing").send(res);
+    const decoded = <{ id: string }>(
+      jwt.verify(refreshToken, process.env.JWT_SECRET_KEY as string)
+    );
+
+    const user = await User.findOne({ _id: decoded.id });
+
+    if (!user) return resp.setError(400, "invalid refresh token").send(res);
+    const access_token = generateToken(user._id, "access");
+    const refresh_token = generateToken(user._id, "refresh");
+
+    return resp
+      .setSuccess(
+        200,
+        { access_token, refresh_token },
+        "access token generated successfully"
+      )
+      .send(res);
   }
 );
