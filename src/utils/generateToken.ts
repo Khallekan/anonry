@@ -5,7 +5,7 @@ const generateToken = function (
   type: "access" | "refresh"
 ): string {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET_KEY as string, {
-    expiresIn: type === "access" ? "2h" : "1y",
+    expiresIn: type === "access" ? "24h" : "1y",
   });
 };
 

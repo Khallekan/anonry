@@ -507,10 +507,11 @@ export const updatePassword = catchController(
 
 export const getAccessToken = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { refreshToken } = req.body;
+    const { refreshToken }: { refreshToken: string | undefined } = req.body;
     console.log("refresh token", req.body);
     if (!refreshToken)
       return resp.setError(400, "refresh token is missing").send(res);
+
     const decoded = <{ id: string }>(
       jwt.verify(refreshToken, process.env.JWT_SECRET_KEY as string)
     );
