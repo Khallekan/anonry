@@ -42,7 +42,7 @@ export const getTimeline = catchController(
 
     limit = req.query.limit ? parseInt(req.query.limit) : 20;
     page = req.query.page ? parseInt(req.query.page) : 1;
-    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "createdAt";
+    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
 
     // calculate the start index of the documents to be returned
     const startIndex = (page - 1) * limit;
