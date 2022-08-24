@@ -31,7 +31,12 @@ export const handleLikes = catchController(
     let entry = await Entry.findOne({ _id: entry_id, deleted: false });
 
     if (!entry) {
-      return resp.setError(StatusCodes.NOT_FOUND, "Invalid Id").send(res);
+      return resp
+        .setError(
+          StatusCodes.NOT_FOUND,
+          `We are sorry. Can't seem to find that entry`
+        )
+        .send(res);
     }
 
     if (!entry.published) {
@@ -45,12 +50,14 @@ export const handleLikes = catchController(
     if (action === "unlike") {
       if (!isLiked) {
         return resp
-          .setError(StatusCodes.BAD_REQUEST, "Entry is not liked")
+          .setError(StatusCodes.FORBIDDEN, "Entry is not liked")
           .send(res);
       }
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
-      entry.no_of_likes -= 1;
-      await entry.save();
+      if (entry.no_of_likes > 0) {
+        entry.no_of_likes -= 1;
+        await entry.save();
+      }
 
       // delete the like from the likes collection
 
@@ -91,22 +98,16 @@ export const handleLikes = catchController(
         owner: entry.user._id,
       });
 
-      // add the user id to the liked_by array in the entry
+      entry.no_of_likes += 1;
+      await entry.save();
 
       entry.isLiked = true;
-
       resp
         .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
         .send(res);
 
       // for future reference, if we want to add the user id to the liked_by array in the entry
       // $push: { liked_by: liked_by },
-
-      await Entry.findByIdAndUpdate(
-        entry_id,
-        { $inc: { no_of_likes: 1 } },
-        { new: true }
-      );
 
       await User.findByIdAndUpdate(
         entry.user._id,

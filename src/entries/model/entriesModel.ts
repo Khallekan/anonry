@@ -34,6 +34,7 @@ const entrySchema = new Schema<IEntry>(
     no_of_likes: {
       type: Number,
       default: 0,
+      min: 0
     },
     published: {
       type: Boolean,
@@ -46,6 +47,7 @@ const entrySchema = new Schema<IEntry>(
     no_of_comments: {
       type: Number,
       default: 0,
+      min: 0
     },
     edited: {
       type: Boolean,
