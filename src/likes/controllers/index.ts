@@ -186,7 +186,10 @@ export const getLikesPerUser = catchController(
       totalDocuments,
     });
 
-    const likes = await Likes.find(searchObj).select("-__v -updatedAt");
+    const likes = await Likes.find(searchObj)
+      .select("-__v -updatedAt")
+      .limit(limit)
+      .skip(startIndex);
 
     return resp
       .setSuccess(
