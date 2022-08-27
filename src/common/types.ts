@@ -106,7 +106,7 @@ export interface ITrash extends Document {
   task?: ITask;
   type: "entry" | "task";
   user?: IUser;
-  deleted_at: Date;
+  expiry_date: Date;
 }
 
 export type ResponseData = Record<string, any> | Record<string, any>[];

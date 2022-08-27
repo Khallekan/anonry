@@ -93,10 +93,6 @@ export const getMyEntries = catchController(
       .sort(sort)
       .select("-__v -liked_by");
 
-    //
-
-    console.log({ entries });
-
     return resp
       .setSuccess(
         StatusCodes.OK,
@@ -159,8 +155,6 @@ export const createEntry = catchController(
       tags?: string[];
     }
 
-    console.log(user_id);
-
     const entryDetails: IEntryDetails = {
       user: user_id,
       title: title,
@@ -175,8 +169,6 @@ export const createEntry = catchController(
     if (tags && tags.length <= 5) {
       // check if Tags exist
       const tagsExist = await Tags.find({ name: { $in: tags } });
-
-      console.log(tagsExist);
 
       if (tagsExist.length !== tags.length) {
         return resp
@@ -209,8 +201,6 @@ export const editEntry = catchController(
     const title: string = req.body.title;
     const description: string = req.body.description;
 
-    console.log({ user_id, entry_id, title, description });
-
     if (!entry_id || !title || !description) {
       return resp
         .setError(StatusCodes.BAD_REQUEST, "All fields are required")
@@ -240,9 +230,12 @@ export const deleteEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
     const entry_id: string | undefined = req.params.id;
-    const deleted_at = new Date().toISOString();
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
 
-    console.log({ entry_id });
+    console.log({ date });
+
+    const expiry_date = date.toISOString();
 
     if (!entry_id) {
       return resp
@@ -268,8 +261,6 @@ export const deleteEntry = catchController(
     }
 
     if (entry.deleted) {
-      console.log("HERE");
-
       return resp
         .setError(StatusCodes.BAD_REQUEST, "Entry already deleted")
         .send(res);
@@ -303,8 +294,8 @@ export const deleteEntry = catchController(
     await Trash.create({
       user: user_id,
       entry: entry_id,
-      deleted_at,
       type: "entry",
+      expiry_date,
     });
 
     console.log("TRASH ITEM CREATED SUCCESSFULLY");

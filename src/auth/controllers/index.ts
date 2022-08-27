@@ -508,7 +508,6 @@ export const updatePassword = catchController(
 export const getAccessToken = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const { refreshToken }: { refreshToken: string | undefined } = req.body;
-    console.log("refresh token", req.body);
     if (!refreshToken)
       return resp.setError(400, "refresh token is missing").send(res);
 

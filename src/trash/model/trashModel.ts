@@ -21,7 +21,7 @@ const trashModel = new Schema<ITrash>(
       ref: "users",
       required: [true, "Please provide a user"],
     },
-    deleted_at: {
+    expiry_date: {
       type: Date,
       required: [true, "Please provide a date"],
     },

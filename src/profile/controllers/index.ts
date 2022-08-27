@@ -27,8 +27,6 @@ export const getUserProfile = catchController(
       .limit(3)
       .select("-__v -user -updatedAt -liked_by");
     user.entries = entries;
-    console.log(user.entries);
-    
 
     return resp.setSuccess(StatusCodes.OK, user, "success").send(res);
   }

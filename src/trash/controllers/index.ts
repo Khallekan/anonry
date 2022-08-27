@@ -9,7 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import User from "../../users/model/userModel";
 import trashScheduler from "../utils/trash-cron";
 
-trashScheduler()
+trashScheduler();
 
 const resp = new ResponseStatus();
 
@@ -87,6 +87,8 @@ export const getTrash = catchController(
       .limit(limit)
       .skip(startIndex);
 
+    console.log({ trash });
+
     resp
       .setSuccess(
         StatusCodes.OK,
@@ -109,10 +111,6 @@ export const restoreTrash = catchController(
     }
 
     const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
-
-    console.log({ trashItem });
-
-    console.log(trashItem.length !== trash_id.length);
 
     if (trashItem.length !== trash_id.length) {
       return resp
@@ -152,11 +150,7 @@ export const restoreTrash = catchController(
       },
     };
 
-    console.log({ update });
-
     const data = await User.findByIdAndUpdate(user, update, { new: true });
-
-    console.log({ data });
 
     await Trash.deleteMany({ _id: { $in: trash_id } });
 
@@ -262,8 +256,6 @@ export const restoreAll = catchController(
       userToUpdate.no_of_entries += entriesLength;
       await userToUpdate.save();
     }
-
-    console.log({ userToUpdate });
 
     await Trash.deleteMany({
       _id: { $in: trashItems.map((item) => item._id) },
