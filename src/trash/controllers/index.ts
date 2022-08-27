@@ -7,7 +7,9 @@ import Likes from "../../likes/model/likesModel";
 import Entry from "../../entries/model/entriesModel";
 import { StatusCodes } from "http-status-codes";
 import User from "../../users/model/userModel";
-import { ObjectId } from "mongodb";
+import trashScheduler from "../utils/trash-cron";
+
+trashScheduler()
 
 const resp = new ResponseStatus();
 
