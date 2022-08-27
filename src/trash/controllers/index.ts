@@ -87,8 +87,6 @@ export const getTrash = catchController(
       .limit(limit)
       .skip(startIndex);
 
-    console.log({ trash });
-
     resp
       .setSuccess(
         StatusCodes.OK,
