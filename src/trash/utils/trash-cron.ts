@@ -6,7 +6,6 @@ const trashScheduler = () => {
   // run cronjob every minute
   cron.schedule("*/60 * * * * *", async () => {
     const date = new Date();
-    date.setDate(date.getDate() + 30);
     const ISODate = date.toISOString();
     const hour = date.getHours();
     const minute = date.getMinutes();
