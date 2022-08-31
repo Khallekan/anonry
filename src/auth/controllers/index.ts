@@ -170,8 +170,10 @@ export const verifyEmail = catchController(
     const isValid = user.validateOTP(otp, user.otpToken, "accountVerify");
     // update user's verified field to true
     if (isValid) {
-      const refresh_token = generateToken(user._id, "refresh");
-      const access_token = generateToken(user.id, "access");
+      const { token: refresh_token, token_expires: refresh_token_expires } =
+        generateToken(user._id, "refresh");
+      const { token: access_token, token_expires: access_token_expires } =
+        generateToken(user.id, "access");
       await user.save();
       return res.status(StatusCodes.OK).json({
         data: {
@@ -184,6 +186,8 @@ export const verifyEmail = catchController(
             },
             refresh_token,
             access_token,
+            refresh_token_expires,
+            access_token_expires,
           },
         },
       });
@@ -249,8 +253,10 @@ export const login = catchController(
     // console.log({isValid});
 
     if (isValid) {
-      const refresh_token = generateToken(user._id, "refresh");
-      const access_token = generateToken(user._id, "access");
+      const { token: refresh_token, token_expires: refresh_token_expires } =
+        generateToken(user._id, "refresh");
+      const { token: access_token, token_expires: access_token_expires } =
+        generateToken(user.id, "access");
       res.status(StatusCodes.OK).json({
         data: {
           status: StatusCodes.OK,
@@ -262,6 +268,8 @@ export const login = catchController(
             },
             refresh_token,
             access_token,
+            refresh_token_expires,
+            access_token_expires,
           },
         },
       });
@@ -518,13 +526,20 @@ export const getAccessToken = catchController(
     const user = await User.findOne({ _id: decoded.id });
 
     if (!user) return resp.setError(400, "invalid refresh token").send(res);
-    const access_token = generateToken(user._id, "access");
-    const refresh_token = generateToken(user._id, "refresh");
+    const { token: refresh_token, token_expires: refresh_token_expires } =
+      generateToken(user._id, "refresh");
+    const { token: access_token, token_expires: access_token_expires } =
+      generateToken(user.id, "access");
 
     return resp
       .setSuccess(
         200,
-        { access_token, refresh_token },
+        {
+          access_token,
+          refresh_token,
+          refresh_token_expires,
+          access_token_expires,
+        },
         "access token generated successfully"
       )
       .send(res);

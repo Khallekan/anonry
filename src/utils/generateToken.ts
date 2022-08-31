@@ -1,12 +1,21 @@
-import jwt from "jsonwebtoken";
+import jwt, { decode, JwtPayload } from "jsonwebtoken";
 
 const generateToken = function (
   userId: string,
   type: "access" | "refresh"
-): string {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET_KEY as string, {
-    expiresIn: type === "access" ? "24h" : "1y",
+): { token: string; token_expires: number } {
+  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET_KEY as string, {
+    expiresIn: type === "access" ? "10s" : "1y",
   });
+
+  const tokens: JwtPayload | string | null = decode(token);
+  let token_expires: number = 0;
+  if (tokens && typeof tokens !== "string") {
+    const { exp } = tokens;
+    token_expires = exp ? exp * 1000 : 0;
+  }
+
+  return { token, token_expires };
 };
 
 export default generateToken;
