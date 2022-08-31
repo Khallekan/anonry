@@ -68,8 +68,10 @@ export interface ITask extends Document {
   title: string;
   description: string;
   status: "pending" | "active" | "completed";
+  due_date: Date;
   user: IUser;
   deleted: boolean;
+  permanently_deleted: false;
   createdAt: Date;
   updatedAt: Date;
 }

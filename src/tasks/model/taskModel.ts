@@ -24,13 +24,21 @@ const TaskSchema = new Schema<ITask>(
       enum: ["pending", "active", "completed"],
       default: "pending",
     },
+    due_date: {
+      type: Date,
+    },
     deleted: {
       type: Boolean,
       default: false,
       select: false,
     },
+    permanently_deleted: {
+      type: Boolean,
+      default: false,
+      select: false,
+    }
   },
-  { timestamps: true }
+  { timestamps: true, validateBeforeSave: true }
 );
 
 export default model<ITask>("tasks", TaskSchema);
