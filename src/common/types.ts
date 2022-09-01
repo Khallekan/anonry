@@ -74,6 +74,7 @@ export interface ITask extends Document {
   permanently_deleted: false;
   createdAt: Date;
   updatedAt: Date;
+  reminder: Date[]
 }
 
 // Bookmark Interface

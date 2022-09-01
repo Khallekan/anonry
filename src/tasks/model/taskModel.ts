@@ -3,10 +3,6 @@ import { ITask } from "../../common/types";
 
 // Create Mongoose Model to store items in a todo list
 
-interface IReminder {
-
-} 
-
 const TaskSchema = new Schema<ITask>(
   {
     title: {
