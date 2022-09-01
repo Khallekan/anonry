@@ -2,6 +2,11 @@ import { Schema, model } from "mongoose";
 import { ITask } from "../../common/types";
 
 // Create Mongoose Model to store items in a todo list
+
+interface IReminder {
+
+} 
+
 const TaskSchema = new Schema<ITask>(
   {
     title: {
@@ -32,6 +37,7 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
+    reminder: [{type: Date}],
     permanently_deleted: {
       type: Boolean,
       default: false,
