@@ -138,9 +138,16 @@ export const getSingleEntry = catchController(
 export const createEntry = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string | undefined = req.user._id;
-    const title: string | undefined = req.body.title;
-    const description: string | undefined = req.body.description;
-    const tags: string[] | undefined = req.body.tags;
+
+    const {
+      title,
+      description,
+      tags,
+    }: {
+      title: string | undefined;
+      description: string | undefined;
+      tags: string[] | undefined;
+    } = req.body;
 
     if (!user_id || !title || !description) {
       return resp
