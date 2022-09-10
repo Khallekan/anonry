@@ -7,7 +7,7 @@ import Task from "../model/taskModel";
 
 const resp = new ResponseStatus();
 
-const createTask = catchController(
+export const createTask = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const user_id: string = req.user._id;
     const {
