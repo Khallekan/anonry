@@ -53,11 +53,13 @@ export const createTask = catchController(
     interface INewTask {
       description: string;
       title?: string;
-      due_date?: Date;
+      due_date?: string;
+      user: string;
     }
 
     const newTask: INewTask = {
       description: description,
+      user: user_id,
     };
 
     if (title) {
@@ -65,15 +67,13 @@ export const createTask = catchController(
     }
 
     if (due_date) {
-      newTask.title = due_date;
+      newTask.due_date = new Date(due_date).toISOString();
     }
 
     const task = await Task.create(newTask);
 
-    return resp.setSuccess(
-      StatusCodes.CREATED,
-      task,
-      "Task created successfully"
-    );
+    return resp
+      .setSuccess(StatusCodes.CREATED, task, "Task created successfully")
+      .send(res);
   }
 );

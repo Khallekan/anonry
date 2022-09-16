@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { ITask } from "../../common/types";
 
 // Create Mongoose Model to store items in a todo list
@@ -17,7 +17,7 @@ const TaskSchema = new Schema<ITask>(
       maxlength: [500, "Description must be less than 500 characters"],
     },
     user: {
-      type: String,
+      type: Types.ObjectId,
       ref: "user",
     },
     status: {
@@ -33,12 +33,12 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
-    reminder: [{type: Date}],
+    reminder: [{ type: Date }],
     permanently_deleted: {
       type: Boolean,
       default: false,
       select: false,
-    }
+    },
   },
   { timestamps: true, validateBeforeSave: true }
 );
