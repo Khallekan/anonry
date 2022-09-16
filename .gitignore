@@ -10,3 +10,4 @@
 .DS_Store
 .env.production
 .env.staging
+/yarn-error.log

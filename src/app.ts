@@ -10,6 +10,7 @@ import cors from "cors";
 import mainRoutes from "./main-routes";
 import path from "path";
 import { StatusCodes } from "http-status-codes";
+import passport from "passport";
 
 const app: Express = express();
 app.use(cors());
