@@ -38,6 +38,8 @@ app.use(ExpressMongoSanitize());
 
 app.use(xss());
 
+app.use(passport.initialize());
+
 app.all("*", (req, res, next) => {
   // we create an error by initializing the Error class object
 
