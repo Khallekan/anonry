@@ -6,6 +6,17 @@ import { IUser } from "../../common/types";
 
 const userSchema = new Schema<IUser>(
   {
+    google: {
+      id: {
+        type: String,
+      },
+      name: {
+        type: String,
+      },
+      email: {
+        type: String,
+      },
+    },
     email: {
       type: String,
       index: true,

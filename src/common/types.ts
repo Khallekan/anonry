@@ -10,6 +10,11 @@ export interface Request extends REQUEST {
 // User Interface
 export interface IUser extends Document {
   _id: string;
+  google: {
+    id: string;
+    email: string;
+    name: string;
+  };
   user_name: string;
   email: string;
   password: string;
@@ -74,7 +79,7 @@ export interface ITask extends Document {
   permanently_deleted: false;
   createdAt: Date;
   updatedAt: Date;
-  reminder: Date[]
+  reminder: Date[];
 }
 
 // Bookmark Interface

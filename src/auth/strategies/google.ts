@@ -12,8 +12,10 @@ passport.use(
       clientSecret: `${process.env.OAUTH_CLIENT_SECRET}`,
       callbackURL: `${process.env.OAUTH_REDIRECT_URL}`,
       scope: ["email", "profile"],
+      passReqToCallback: true,
     },
     async (
+      request,
       accessToken: string,
       refreshToken: string,
       profile: Profile,

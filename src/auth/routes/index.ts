@@ -12,7 +12,7 @@ import {
   verifyEmail,
 } from "../controllers";
 
-import("../strategies/google")
+import("../strategies/google");
 
 const router = Router();
 
@@ -20,9 +20,9 @@ router.route("/").post(login);
 
 router.route("/signup").post(createUser);
 
-// router
-//   .route("/signup/google")
-//   .get(passport.authenticate("google"), createUser);
+router.route("/signup/google").get(passport.authenticate("google"));
+
+router.route("/signup/google/callback")
 
 // router.route("/google").get(passport.authenticate("google"), createUser);
 
