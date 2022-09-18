@@ -6,3 +6,9 @@ declare module "express-serve-static-core" {
     user: IUser;
   }
 }
+
+declare global {
+  namespace Express {
+    interface User extends IUser {}
+  }
+}

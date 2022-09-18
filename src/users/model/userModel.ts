@@ -28,7 +28,7 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, "Please Provide a Password"],
+      // required: [true, "Please Provide a Password"],
       minLength: 8,
       //ensure password is never returned by a query
       select: false,

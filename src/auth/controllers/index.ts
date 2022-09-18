@@ -100,7 +100,8 @@ export const createUser = catchController(
     // make email is unique
     if (req.body.user_name) {
       const existingUserName = await User.findOne({
-        user_name,
+        $regex: user_name,
+        $options: "i",
       });
       if (existingUserName) {
         return res.status(StatusCodes.CONFLICT).json({
@@ -138,6 +139,13 @@ export const createUser = catchController(
         message: "OTP has been sent to your email",
       },
     });
+  }
+);
+
+export const createUserGoogle = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    console.log("We got here ");
+    resp.setSuccess(StatusCodes.OK, {}, "Yippie").send(res);
   }
 );
 

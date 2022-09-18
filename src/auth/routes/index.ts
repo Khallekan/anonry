@@ -3,6 +3,7 @@ import passport from "passport";
 import verifyToken from "../../utils/verifyToken";
 import {
   createUser,
+  createUserGoogle,
   forgotPassword,
   getAccessToken,
   login,
@@ -22,7 +23,9 @@ router.route("/signup").post(createUser);
 
 router.route("/signup/google").get(passport.authenticate("google"));
 
-router.route("/signup/google/callback")
+router
+  .route("/signup/google/callback")
+  .get(passport.authenticate("google"), createUserGoogle);
 
 // router.route("/google").get(passport.authenticate("google"), createUser);
 
