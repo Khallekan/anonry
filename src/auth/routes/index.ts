@@ -21,11 +21,13 @@ router.route("/").post(login);
 
 router.route("/signup").post(createUser);
 
-router.route("/signup/google").get(passport.authenticate("google"));
+router
+  .route("/signup/google")
+  .get(passport.authenticate("google", { session: false }));
 
 router
   .route("/signup/google/callback")
-  .get(passport.authenticate("google"), createUserGoogle);
+  .get(passport.authenticate("google", { session: false }), createUserGoogle);
 
 // router.route("/google").get(passport.authenticate("google"), createUser);
 

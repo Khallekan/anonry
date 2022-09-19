@@ -11,6 +11,7 @@ import mainRoutes from "./main-routes";
 import path from "path";
 import { StatusCodes } from "http-status-codes";
 import passport from "passport";
+import cookieSession from "cookie-session";
 
 const app: Express = express();
 app.use(cors());
@@ -35,8 +36,16 @@ app.set("views", path.join(__dirname, "../emailViews"));
 app.use(helmet());
 
 app.use(ExpressMongoSanitize());
-
 app.use(xss());
+
+// setting up cookieSession
+app.use(
+  cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [`${process.env.COOKIE_SECRET_KEY}`],
+  })
+);
+
 
 app.use(passport.initialize());
 app.use(passport.session());

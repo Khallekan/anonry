@@ -145,7 +145,11 @@ export const createUser = catchController(
 export const createUserGoogle = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     console.log("We got here ");
-    resp.setSuccess(StatusCodes.OK, {}, "Yippie").send(res);
+    console.log({ query: req.query, params: req.params, body: req.body, user: req.user });
+
+    resp
+      .setSuccess(StatusCodes.OK, { data: "Information" }, "Yippie")
+      .send(res);
   }
 );
 

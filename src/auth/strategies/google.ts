@@ -12,7 +12,7 @@ const rand = (): number => Math.floor(Math.random() * 1000000 + 1);
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
-})
+});
 
 passport.deserializeUser(async (id, done) => {
   const user = await User.findById(id);
@@ -60,35 +60,49 @@ passport.use(
             name: profile.displayName,
             email: profile._json.email || "",
           },
-          user_name: profile.displayName.trim().replace(spaceRegex, "_"),
+          user_name: profile.displayName
+            .trim()
+            .replace(spaceRegex, "_")
+            .toLowerCase(),
           email: profile._json.email || "",
           role: "user",
           verified: true,
           status: "verified",
         };
         const existingUserName = await User.findOne({
-          $regex: userObj.user_name,
-          $options: "i",
+          user_name: { $regex: userObj.user_name, $options: "i" },
         });
 
         let userNameExists: boolean = !!existingUserName;
+        console.log({ userNameExists, userName: userObj.user_name });
+
         while (userNameExists) {
+          console.log("ENTERED HERE FOR SOME REASON");
+
           userObj.user_name = `${profile.displayName
             .trim()
-            .replace(spaceRegex, "_")}_${rand()}`;
+            .replace(spaceRegex, "_")
+            .toLocaleLowerCase()}_${rand()}`;
           const newUserNameExists = await User.findOne({
             $regex: userObj.user_name,
             $options: "i",
           });
-          if (!newUserNameExists) {
+          console.log({ newUserNameExists, userName: userObj.user_name });
+
+          if (newUserNameExists) {
+            console.log("ALLOWS THE WHILE LOOP EXIT");
+
             userNameExists = false;
           }
         }
+
         const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
         userObj.avatar = `https://robohash.org/${userObj.user_name}?set=${randomNumber}&size=500x500`;
 
         const newUser = await User.create(userObj);
+
         done(null, newUser);
+
         return;
       }
       done(new Error("User with email already exists"));
