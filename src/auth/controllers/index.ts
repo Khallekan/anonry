@@ -144,12 +144,37 @@ export const createUser = catchController(
 
 export const createUserGoogle = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("We got here ");
-    console.log({ query: req.query, params: req.params, body: req.body, user: req.user });
+    const user = req.user;
 
-    resp
-      .setSuccess(StatusCodes.OK, { data: "Information" }, "Yippie")
-      .send(res);
+    if (!user.google) {
+      return resp
+        .setError(
+          StatusCodes.CONFLICT,
+          "Try logging in and connecting your account to google"
+        )
+        .send(res);
+    }
+
+    const { token: refresh_token, token_expires: refresh_token_expires } =
+      generateToken(user._id, "refresh");
+    const { token: access_token, token_expires: access_token_expires } =
+      generateToken(user.id, "access");
+    return res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: "Welcome anonymous one",
+        data: {
+          user: {
+            user_name: user.user_name,
+            email: user.email,
+          },
+          refresh_token,
+          access_token,
+          refresh_token_expires,
+          access_token_expires,
+        },
+      },
+    });
   }
 );
 
@@ -202,7 +227,7 @@ export const verifyEmail = catchController(
             access_token_expires,
           },
         },
-      });
+      }).send("<div>Plantain</div>");
     }
 
     return res.status(StatusCodes.BAD_REQUEST).json({

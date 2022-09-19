@@ -105,7 +105,7 @@ passport.use(
 
         return;
       }
-      done(new Error("User with email already exists"));
+      done(null, user);
     }
   )
 );

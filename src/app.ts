@@ -12,6 +12,7 @@ import path from "path";
 import { StatusCodes } from "http-status-codes";
 import passport from "passport";
 import cookieSession from "cookie-session";
+import serveFavicon from "serve-favicon";
 
 const app: Express = express();
 app.use(cors());
@@ -31,6 +32,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/", mainRoutes);
 
+app.use(serveFavicon(path.join(__dirname, "../public", "favicon.png")));
 app.set("views", path.join(__dirname, "../emailViews"));
 
 app.use(helmet());
@@ -45,7 +47,6 @@ app.use(
     keys: [`${process.env.COOKIE_SECRET_KEY}`],
   })
 );
-
 
 app.use(passport.initialize());
 app.use(passport.session());
