@@ -11,20 +11,36 @@ import mainRoutes from "./main-routes";
 import path from "path";
 import { StatusCodes } from "http-status-codes";
 import passport from "passport";
-import cookieSession from "cookie-session";
+// import cookieSession from "cookie-session";
+import session from "express-session";
 import serveFavicon from "serve-favicon";
 
 const app: Express = express();
-app.use(cors());
 
 app.use(logger("dev"));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.enable("trust proxy");
+// app.enable("trust proxy");
 app.set("view engine", "pug");
 
+app.use(cors());
+
 app.options("*", (cors as any)());
+
+// app.use(
+//   cookieSession({
+//     name: "auth-session-cookie",
+//     keys: [`${process.env.COOKIE_SECRET_KEY}`, `${process.env.JWT_SECRET_KEY}`],
+//     maxAge: 24 * 60 * 60 * 1000,
+//   })
+// );
+
+app.use(session({
+  secret: process.env.COOKIE_SECRET_KEY as string,
+  resave: false,
+  saveUninitialized: false,
+}))
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Anonry");
@@ -39,14 +55,6 @@ app.use(helmet());
 
 app.use(ExpressMongoSanitize());
 app.use(xss());
-
-// setting up cookieSession
-app.use(
-  cookieSession({
-    maxAge: 24 * 60 * 60 * 1000,
-    keys: [`${process.env.COOKIE_SECRET_KEY}`],
-  })
-);
 
 app.use(passport.initialize());
 app.use(passport.session());

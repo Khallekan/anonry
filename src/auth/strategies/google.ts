@@ -5,31 +5,20 @@ import {
   VerifyCallback,
 } from "passport-google-oauth20";
 import User from "../../users/model/userModel";
-
+import jwt from "jsonwebtoken";
 // generate a random whole number between 1 and 1 million
 
 const rand = (): number => Math.floor(Math.random() * 1000000 + 1);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
-});
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: `${process.env.OAUTH_CLIENT_ID}`,
       clientSecret: `${process.env.OAUTH_CLIENT_SECRET}`,
-      callbackURL: `/users/auth/signup/google/callback`,
+      callbackURL: `/users/auth/google/callback`,
       scope: ["email", "profile"],
-      passReqToCallback: true,
     },
     async (
-      request,
       accessToken: string,
       refreshToken: string,
       profile: Profile,
@@ -38,6 +27,12 @@ passport.use(
       const user = await User.findOne({
         $or: [{ "google.id": profile.id }, { email: profile._json.email }],
       });
+      // const decoded = jwt.verify(
+      //   accessToken,
+      //   process.env.OAUTH_CLIENT_SECRET as string
+      // );
+
+      console.log({ accessToken });
 
       if (!user) {
         // regex to replace all spaces with underscores
@@ -109,3 +104,18 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+  console.log("Deserializing user...");
+
+  console.log({ id });
+
+  User.findById(id, (err, user) => {
+    console.log({ user });
+    done(err, user);
+  });
+});
