@@ -10,7 +10,7 @@ import cors from "cors";
 import mainRoutes from "./main-routes";
 import path from "path";
 import { StatusCodes } from "http-status-codes";
-import passport from "passport";
+// import passport from "passport";
 import cookieSession from "cookie-session";
 import serveFavicon from "serve-favicon";
 
@@ -48,8 +48,8 @@ app.use(
   })
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.all("*", (req, res, next) => {
   // we create an error by initializing the Error class object
