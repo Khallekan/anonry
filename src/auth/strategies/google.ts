@@ -5,10 +5,8 @@ import {
   VerifyCallback,
 } from "passport-google-oauth20";
 import User from "../../users/model/userModel";
-
+import { rand } from "../../utils/randomNumber";
 // generate a random whole number between 1 and 1 million
-
-const rand = (): number => Math.floor(Math.random() * 1000000 + 1);
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -18,7 +16,18 @@ passport.deserializeUser(async (id, done) => {
   const user = await User.findById(id);
   done(null, user);
 });
-
+//  {
+// [1]   userInfo: {
+// [1]     id: '118003239192181473774',
+// [1]     email: 'totstater972@gmail.com',
+// [1]     verified_email: true,
+// [1]     name: 'Tater Tots',
+// [1]     given_name: 'Tater',
+// [1]     family_name: 'Tots',
+// [1]     picture: 'https://lh3.googleusercontent.com/a/ALm5wu2aZGOxPmbyOjHynyl3TXZ4qPX9D9kaswK2Dlo=s96-c',
+// [1]     locale: 'en'
+// [1]   }
+// [1] }
 passport.use(
   new GoogleStrategy(
     {

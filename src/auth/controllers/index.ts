@@ -13,6 +13,7 @@ import generateToken from "../../utils/generateToken";
 import ResponseStatus from "../../utils/response";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import { rand } from "../../utils/randomNumber";
 
 const resp = new ResponseStatus();
 
@@ -155,37 +156,133 @@ export const createUserGoogle = catchController(
       });
     }
 
-    const { data: userInfo } = await axios.get(
-      "https://www.googleapis.com/oauth2/v2/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    const {
+      data: userInfo,
+    }: {
+      data: {
+        id: string;
+        email: string;
+        verified_email: boolean;
+        name: string;
+        given_name: string;
+        familt_name: string;
+        picture: string;
+        locale: string;
+      };
+    } = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const user = await User.findOne({
+      $or: [
+        { "google.id": userInfo.id },
+        { email: { $regex: userInfo.email, $options: "i" } },
+      ],
+    });
+
+    if (!user) {
+      // regex to replace all spaces with underscores
+      const spaceRegex = /\s/g;
+      const userObj: {
+        google: {
+          id: string;
+          name: string;
+          email: string;
+        };
+        user_name: string;
+        email: string;
+        role: "user";
+        avatar?: string;
+        verified: boolean;
+        status: "verified";
+      } = {
+        google: {
+          id: userInfo.id,
+          name: userInfo.name,
+          email: userInfo.email,
         },
+        user_name: userInfo.name.trim().replace(spaceRegex, "_").toLowerCase(),
+        email: userInfo.email,
+        role: "user",
+        verified: true,
+        status: "verified",
+      };
+      const existingUserName = await User.findOne({
+        user_name: { $regex: userObj.user_name, $options: "i" },
+      });
+
+      let userNameExists: boolean = !!existingUserName;
+      console.log({ userNameExists, userName: userObj.user_name });
+
+      while (userNameExists) {
+        console.log("ENTERED HERE TO GENERATE UNIQUE USERNAME");
+
+        userObj.user_name = `${userInfo.name
+          .trim()
+          .replace(spaceRegex, "_")
+          .toLocaleLowerCase()}_${rand()}`;
+        const newUserNameExists = await User.findOne({
+          $regex: userObj.user_name,
+          $options: "i",
+        });
+        console.log({ newUserNameExists, userName: userObj.user_name });
+
+        if (newUserNameExists) {
+          console.log("ALLOWS THE WHILE LOOP EXIT");
+
+          userNameExists = false;
+        }
       }
-    );
 
-    console.log({ userInfo });
+      const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
+      userObj.avatar = `https://robohash.org/${userObj.user_name}?set=${randomNumber}&size=500x500`;
 
-    // const { token: refresh_token, token_expires: refresh_token_expires } =
-    //   generateToken(user._id, "refresh");
-    // const { token: access_token, token_expires: access_token_expires } =
-    //   generateToken(user.id, "access");
-    // return res.status(StatusCodes.OK).json({
-    //   data: {
-    //     status: StatusCodes.OK,
-    //     message: "Welcome anonymous one",
-    //     data: {
-    //       user: {
-    //         user_name: user.user_name,
-    //         email: user.email,
-    //       },
-    //       refresh_token,
-    //       access_token,
-    //       refresh_token_expires,
-    //       access_token_expires,
-    //     },
-    //   },
-    // });
+      const newUser = await User.create(userObj);
+
+      const { token: refresh_token, token_expires: refresh_token_expires } =
+        generateToken(newUser._id, "refresh");
+      const { token: access_token, token_expires: access_token_expires } =
+        generateToken(newUser._id, "access");
+      return res.status(StatusCodes.OK).json({
+        data: {
+          status: StatusCodes.OK,
+          message: "Welcome anonymous one",
+          data: {
+            user: {
+              user_name: newUser.user_name,
+              email: newUser.email,
+            },
+            refresh_token,
+            access_token,
+            refresh_token_expires,
+            access_token_expires,
+          },
+        },
+      });
+    }
+
+    const { token: refresh_token, token_expires: refresh_token_expires } =
+      generateToken(user._id, "refresh");
+    const { token: access_token, token_expires: access_token_expires } =
+      generateToken(user._id, "access");
+    return res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: "Welcome anonymous one",
+        data: {
+          user: {
+            user_name: user.user_name,
+            email: user.email,
+          },
+          refresh_token,
+          access_token,
+          refresh_token_expires,
+          access_token_expires,
+        },
+      },
+    });
   }
 );
 
