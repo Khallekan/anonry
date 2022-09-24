@@ -664,12 +664,17 @@ export const updatePassword = catchController(
 export const getAccessToken = catchController(
   async (req: Request, res: Response, next: NextFunction) => {
     const { refreshToken }: { refreshToken: string | undefined } = req.body;
-    if (!refreshToken)
-      return resp.setError(400, "refresh token is missing").send(res);
+    if (!refreshToken) return resp.setError(400, "token is missing").send(res);
 
-    const decoded = <{ id: string }>(
+    const decoded = <{ id: string; type: string }>(
       jwt.verify(refreshToken, process.env.JWT_SECRET_KEY as string)
     );
+
+    if (decoded.type && decoded.type !== "string") {
+      return resp
+        .setError(400, "invalid token provided. please provide a refresh token")
+        .send(res);
+    }
 
     const user = await User.findOne({ _id: decoded.id });
 
