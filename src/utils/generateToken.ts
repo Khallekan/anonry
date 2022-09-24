@@ -4,7 +4,7 @@ const generateToken = function (
   userId: string,
   type: "access" | "refresh"
 ): { token: string; token_expires: number } {
-  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET_KEY as string, {
+  const token = jwt.sign({ id: userId, type }, process.env.JWT_SECRET_KEY as string, {
     expiresIn: type === "access" ? "24h" : "1y",
   });
 
