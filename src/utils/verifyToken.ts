@@ -21,6 +21,15 @@ async function verifyToken(
       const decoded = <any>(
         jwt.verify(token, process.env.JWT_SECRET_KEY as string)
       );
+      
+      if (decoded.type && decoded.type !== "access") {
+        response
+          .setError(
+            StatusCodes.FORBIDDEN,
+            "Provided token is not an access token"
+          )
+          .send(res);
+      }
 
       const user = await User.findById(decoded.id);
       if (!user) {
