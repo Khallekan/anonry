@@ -176,10 +176,7 @@ export const createUserGoogle = catchController(
     });
 
     const user = await User.findOne({
-      $or: [
-        { "google.id": userInfo.id },
-        { email: { $regex: userInfo.email, $options: "i" } },
-      ],
+      $or: [{ "google.id": userInfo.id }, { email: userInfo.email }],
     });
 
     if (!user) {
