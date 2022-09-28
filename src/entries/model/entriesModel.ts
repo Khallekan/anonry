@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { IEntry } from "../../common/types";
 import { ObjectId } from "mongodb";
 // create mongoose schema to store blog post
@@ -27,7 +27,7 @@ const entrySchema = new Schema<IEntry>(
       default: [],
     },
     user: {
-      type: ObjectId,
+      type: Types.ObjectId,
       ref: "user",
       required: [true, "Please provide a user"],
     },
