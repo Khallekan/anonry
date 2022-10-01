@@ -39,6 +39,7 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
+    tags: [{type: String}]
   },
   { timestamps: true, validateBeforeSave: true }
 );
