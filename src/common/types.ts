@@ -80,6 +80,7 @@ export interface ITask extends Document {
   createdAt: Date;
   updatedAt: Date;
   reminder: Date[];
+  tags: string[]
 }
 
 // Bookmark Interface
