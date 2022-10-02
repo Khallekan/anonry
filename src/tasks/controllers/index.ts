@@ -14,10 +14,12 @@ export const createTask = catchController(
       title,
       description,
       due_date,
+      tags,
     }: {
       title: string | undefined;
       description: string | undefined;
       due_date: string | undefined;
+      tags: string[] | undefined;
     } = req.body;
 
     if (!description) {
@@ -55,6 +57,7 @@ export const createTask = catchController(
       title?: string;
       due_date?: string;
       user: string;
+      tags?: string[];
     }
 
     const newTask: INewTask = {
@@ -68,6 +71,10 @@ export const createTask = catchController(
 
     if (due_date) {
       newTask.due_date = new Date(due_date).toISOString();
+    }
+
+    if (tags) {
+      newTask.tags = tags;
     }
 
     const task = await Task.create(newTask);
