@@ -189,6 +189,9 @@ export const createUserGoogle = catchController(
           message: `User with email: ${googleInfo.email} already exists`,
         });
       }
+
+      console.log("GOOGLE SIGNUP");
+
       // regex to replace all spaces with underscores
       const spaceRegex = /\s/g;
       const userObj: {
@@ -197,7 +200,6 @@ export const createUserGoogle = catchController(
           name: string;
           email: string;
         };
-        user_name: string;
         email: string;
         role: "user";
         avatar?: string;
@@ -209,38 +211,11 @@ export const createUserGoogle = catchController(
           name: googleInfo.name,
           email: googleInfo.email,
         },
-        user_name: googleInfo.name.trim().replace(spaceRegex, "_").toLowerCase(),
         email: googleInfo.email,
         role: "user",
         verified: true,
         status: "verified",
       };
-      const existingUserName = await User.findOne({
-        user_name: { $regex: userObj.user_name, $options: "i" },
-      });
-
-      let userNameExists: boolean = !!existingUserName;
-      console.log({ userNameExists, userName: userObj.user_name });
-
-      while (userNameExists) {
-        console.log("ENTERED HERE TO GENERATE UNIQUE USERNAME");
-
-        userObj.user_name = `${googleInfo.name
-          .trim()
-          .replace(spaceRegex, "_")
-          .toLocaleLowerCase()}_${rand()}`;
-        const newUserNameExists = await User.findOne({
-          $regex: userObj.user_name,
-          $options: "i",
-        });
-        console.log({ newUserNameExists, userName: userObj.user_name });
-
-        if (newUserNameExists) {
-          console.log("ALLOWS THE WHILE LOOP EXIT");
-
-          userNameExists = false;
-        }
-      }
 
       const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
       userObj.avatar = `https://robohash.org/${rand()}?set=${randomNumber}&size=500x500`;
@@ -267,6 +242,8 @@ export const createUserGoogle = catchController(
         },
       });
     }
+
+    console.log("GOOGLE SIGNIN");
 
     const { token: refresh_token, token_expires: refresh_token_expires } =
       generateToken(user._id, "refresh");
