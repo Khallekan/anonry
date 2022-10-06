@@ -157,7 +157,7 @@ export const createUserGoogle = catchController(
     }
 
     const {
-      data: userInfo,
+      data: googleInfo,
     }: {
       data: {
         id: string;
@@ -176,17 +176,17 @@ export const createUserGoogle = catchController(
     });
 
     const user = await User.findOne({
-      $and: [{ "google.id": userInfo.id }, { email: userInfo.email }],
+      $and: [{ "google.id": googleInfo.id }, { email: googleInfo.email }],
     });
 
     if (!user) {
       // check if email already exists
-      const existingUserEmail = await User.findOne({ email: userInfo.email });
+      const existingUserEmail = await User.findOne({ email: googleInfo.email });
 
       if (existingUserEmail) {
         return res.status(StatusCodes.CONFLICT).json({
           status: StatusCodes.CONFLICT,
-          message: `User with email: ${userInfo.email} already exists`,
+          message: `User with email: ${googleInfo.email} already exists`,
         });
       }
       // regex to replace all spaces with underscores
@@ -205,12 +205,12 @@ export const createUserGoogle = catchController(
         status: "verified";
       } = {
         google: {
-          id: userInfo.id,
-          name: userInfo.name,
-          email: userInfo.email,
+          id: googleInfo.id,
+          name: googleInfo.name,
+          email: googleInfo.email,
         },
-        user_name: userInfo.name.trim().replace(spaceRegex, "_").toLowerCase(),
-        email: userInfo.email,
+        user_name: googleInfo.name.trim().replace(spaceRegex, "_").toLowerCase(),
+        email: googleInfo.email,
         role: "user",
         verified: true,
         status: "verified",
@@ -225,7 +225,7 @@ export const createUserGoogle = catchController(
       while (userNameExists) {
         console.log("ENTERED HERE TO GENERATE UNIQUE USERNAME");
 
-        userObj.user_name = `${userInfo.name
+        userObj.user_name = `${googleInfo.name
           .trim()
           .replace(spaceRegex, "_")
           .toLocaleLowerCase()}_${rand()}`;
@@ -243,7 +243,7 @@ export const createUserGoogle = catchController(
       }
 
       const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
-      userObj.avatar = `https://robohash.org/${userObj.user_name}?set=${randomNumber}&size=500x500`;
+      userObj.avatar = `https://robohash.org/${rand()}?set=${randomNumber}&size=500x500`;
 
       const newUser = await User.create(userObj);
 
@@ -257,7 +257,6 @@ export const createUserGoogle = catchController(
           message: "Welcome anonymous one",
           data: {
             user: {
-              user_name: newUser.user_name,
               email: newUser.email,
             },
             refresh_token,
