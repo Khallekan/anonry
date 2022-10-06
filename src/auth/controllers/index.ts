@@ -179,11 +179,14 @@ export const createUserGoogle = catchController(
       $and: [{ "google.id": googleInfo.id }, { email: googleInfo.email }],
     });
 
+    console.log({location: "CHECKING IF USER EXISTS USING GOOGLE ID", user});
+
     if (!user) {
       // check if email already exists
       const existingUserEmail = await User.findOne({ email: googleInfo.email });
 
       if (existingUserEmail) {
+        console.log("EMAIL EXISTS");
         return res.status(StatusCodes.CONFLICT).json({
           status: StatusCodes.CONFLICT,
           message: `User with email: ${googleInfo.email} already exists`,
@@ -193,7 +196,6 @@ export const createUserGoogle = catchController(
       console.log("GOOGLE SIGNUP");
 
       // regex to replace all spaces with underscores
-      const spaceRegex = /\s/g;
       const userObj: {
         google: {
           id: string;
