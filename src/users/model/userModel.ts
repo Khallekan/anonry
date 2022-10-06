@@ -35,7 +35,7 @@ const userSchema = new Schema<IUser>(
     },
     user_name: {
       type: String,
-      required: [true, "Please provide a user name"],
+      // required: [true, "Please provide a user name"],
       minLength: 3,
       unique: true,
       sparse: true,
