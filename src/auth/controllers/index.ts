@@ -1,4 +1,4 @@
-import { Response, NextFunction, Request } from "express";
+import { Response, NextFunction, Request, response } from "express";
 import isEmail from "validator/lib/isEmail";
 import User from "../../users/model/userModel";
 import {
@@ -149,8 +149,8 @@ export const createUserGoogle = catchController(
     const { token }: { token: string | undefined } = req.body;
 
     if (!token || typeof token !== "string") {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        status: StatusCodes.BAD_REQUEST,
+      return res.status(StatusCodes.FORBIDDEN).json({
+        status: StatusCodes.FORBIDDEN,
         message: "Invalid token or token missing",
         data: null,
       });
@@ -165,7 +165,7 @@ export const createUserGoogle = catchController(
         verified_email: boolean;
         name: string;
         given_name: string;
-        familt_name: string;
+        family_name: string;
         picture: string;
         locale: string;
       };
@@ -176,10 +176,19 @@ export const createUserGoogle = catchController(
     });
 
     const user = await User.findOne({
-      $or: [{ "google.id": userInfo.id }, { email: userInfo.email }],
+      $and: [{ "google.id": userInfo.id }, { email: userInfo.email }],
     });
 
     if (!user) {
+      // check if email already exists
+      const existingUserEmail = await User.findOne({ email: userInfo.email });
+
+      if (existingUserEmail) {
+        return res.status(StatusCodes.CONFLICT).json({
+          status: StatusCodes.CONFLICT,
+          message: `User with email: ${userInfo.email} already exists`,
+        });
+      }
       // regex to replace all spaces with underscores
       const spaceRegex = /\s/g;
       const userObj: {
