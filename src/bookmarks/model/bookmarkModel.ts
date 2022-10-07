@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import { IBookmark } from "../../common/types";
-import User from "../../users/model/userModel";
 
 const bookmarkModel = new Schema<IBookmark>(
   {

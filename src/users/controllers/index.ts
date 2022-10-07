@@ -73,3 +73,5 @@ export const editUser = catchController(
       .send(res);
   }
 );
+
+// delete user

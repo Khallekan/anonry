@@ -1,7 +1,12 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, StringSchemaDefinition } from "mongoose";
 import { ITask } from "../../common/types";
 
 // Create Mongoose Model to store items in a todo list
+
+const TaskTagSchema = new Schema<{ name: string; color: string }>({
+  name: { type: String },
+  color: { type: String },
+});
 
 const TaskSchema = new Schema<ITask>(
   {
@@ -39,7 +44,7 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
-    tags: [{type: String}]
+    tags: [TaskTagSchema],
   },
   { timestamps: true, validateBeforeSave: true }
 );
