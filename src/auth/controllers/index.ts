@@ -150,9 +150,11 @@ export const createUserGoogle = catchController(
 
     if (!token || typeof token !== "string") {
       return res.status(StatusCodes.FORBIDDEN).json({
-        status: StatusCodes.FORBIDDEN,
-        message: "Invalid token or token missing",
-        data: null,
+        data: {
+          status: StatusCodes.FORBIDDEN,
+          message: "Invalid token or token missing",
+          data: null,
+        },
       });
     }
 
@@ -179,7 +181,7 @@ export const createUserGoogle = catchController(
       $and: [{ "google.id": googleInfo.id }, { email: googleInfo.email }],
     });
 
-    console.log({location: "CHECKING IF USER EXISTS USING GOOGLE ID", user});
+    console.log({ location: "CHECKING IF USER EXISTS USING GOOGLE ID", user });
 
     if (!user) {
       // check if email already exists
@@ -188,8 +190,10 @@ export const createUserGoogle = catchController(
       if (existingUserEmail) {
         console.log("EMAIL EXISTS");
         return res.status(StatusCodes.CONFLICT).json({
-          status: StatusCodes.CONFLICT,
-          message: `User with email: ${googleInfo.email} already exists`,
+          data: {
+            status: StatusCodes.CONFLICT,
+            message: `User with email: ${googleInfo.email} already exists`,
+          },
         });
       }
 
@@ -241,6 +245,16 @@ export const createUserGoogle = catchController(
             refresh_token_expires,
             access_token_expires,
           },
+        },
+      });
+    }
+
+    if (user.deleted) {
+      console.log("USER HAS BEEN DELETED");
+      res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          message: "User has been deleted",
+          status: StatusCodes.NOT_FOUND,
         },
       });
     }
@@ -357,13 +371,21 @@ export const login = catchController(
     // find user with email or user_name and deleted field is false
     const user = await User.findOne({
       $or: [{ email: identifier.trim() }, { user_name: identifier.trim() }],
-      deleted: false,
     }).select("+password -__v +status");
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {
           status: StatusCodes.NOT_FOUND,
           message: "User with this email or username does not exist",
+        },
+      });
+    }
+
+    if (user.deleted) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        data: {
+          status: StatusCodes.NOT_FOUND,
+          message: "This account has been deleted",
         },
       });
     }

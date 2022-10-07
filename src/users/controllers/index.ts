@@ -75,3 +75,27 @@ export const editUser = catchController(
 );
 
 // delete user
+
+export const deleteUser = catchController(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return resp.setError(StatusCodes.NOT_FOUND, "User not found").send(res);
+    }
+
+    if (user.deleted) {
+      return resp
+        .setError(
+          StatusCodes.NOT_FOUND,
+          "Account has already been permanently deleted"
+        )
+        .send(res);
+    }
+
+    
+
+  }
+);
