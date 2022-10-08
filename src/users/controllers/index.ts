@@ -3,7 +3,7 @@ import ResponseStatus from "../../utils/response";
 import catchController from "../../utils/catchControllerAsyncs";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-
+import Entries from "../../entries/model/entriesModel";
 const resp = new ResponseStatus();
 
 export const editUser = catchController(
@@ -95,7 +95,10 @@ export const deleteUser = catchController(
         .send(res);
     }
 
-    
-
+    await Entries.updateMany(
+      { user: user._id },
+      { deleted: true, permanentlyDeleted: true, published: false },
+      {new: true}
+    );
   }
 );
