@@ -9,7 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import User from "../../users/model/userModel";
 import trashScheduler from "../utils/trash-cron";
 
-trashScheduler();
+export const trashCron = trashScheduler();
 
 const resp = new ResponseStatus();
 

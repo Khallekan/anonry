@@ -4,7 +4,7 @@ import Entry from "../../entries/model/entriesModel";
 
 const trashScheduler = () => {
   // run cronjob every minute
-  cron.schedule("*/60 * * * * *", async () => {
+  return cron.schedule("*/60 * * * * *", async () => {
     const date = new Date();
     const ISODate = date.toISOString();
     const hour = date.getHours();

@@ -27,7 +27,7 @@ app.set("view engine", "pug");
 app.options("*", (cors as any)());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to Anonry");
+  res.status(StatusCodes.OK).send("Welcome to Anonry");
 });
 
 app.use("/", mainRoutes);

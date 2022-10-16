@@ -1,4 +1,4 @@
-import AppError from "../utils/AppErrorModule.js";
+import AppError from "../utils/AppErrorModule";
 import { StatusCodes } from "http-status-codes";
 
 const handleCastErrorDB = (err) => {
