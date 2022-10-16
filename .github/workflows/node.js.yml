@@ -31,13 +31,25 @@ jobs:
           yarn install --frozen-lockfile
           elif [ -e package-lock.json ]; then
           npm ci
-    - run: |
+          else
+          npm i
+          fi
+          npm ci
+    - run:  |
           if [ -e yarn.lock ]; then
           yarn install --frozen-lockfile
           elif [ -e package-lock.json ]; then
+          npm ci
+          else
+          npm i
+          fi
           npm run build
-    - run: |
+    - run:  |
           if [ -e yarn.lock ]; then
           yarn install --frozen-lockfile
           elif [ -e package-lock.json ]; then
+          npm ci
+          else
+          npm i
+          fi
           npm test
