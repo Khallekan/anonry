@@ -10,7 +10,7 @@
     "build": "yarn tsc",
     "start": "node bin/server.js",
     "dev": "concurrently \" tsc --watch\" \"nodemon -q bin/server.js\"",
-    "test": "jest --detectOpenHandles"
+    "test": "jest"
   },
   "dependencies": {
     "axios": "^0.27.2",
