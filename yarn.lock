@@ -563,15 +563,6 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@shelf/jest-mongodb@^4.1.1":
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/@shelf/jest-mongodb/-/jest-mongodb-4.1.1.tgz#56cac36214fb3d6d2249de4d0d12f7e1dff4814d"
-  integrity sha512-g6acncEnfD8Ah394FVKSdmUjXiYOyudXzP8Wdk7uNS7Bc2SqZnadYEDoxsYdH82zDgpauXTJmUXKXYVTNnFb3A==
-  dependencies:
-    debug "4.3.4"
-    mongodb-memory-server "8.8.0"
-    uuid "8.3.2"
-
 "@sinclair/typebox@^0.24.1":
   version "0.24.46"
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.46.tgz#57501b58023776dbbae9e25619146286440be34c"
@@ -1166,7 +1157,7 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson@^4.6.3, bson@^4.6.5, bson@^4.7.0:
+bson@^4.6.5, bson@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/bson/-/bson-4.7.0.tgz#7874a60091ffc7a45c5dd2973b5cad7cded9718a"
   integrity sha512-VrlEE4vuiO1WTpfof4VmaVolCVYkYTgB9iWgYNOrVlnifpME/06fhFRmONgBhClD5pFC1t9ZWqFUQEQAzY43bA==
@@ -1470,7 +1461,7 @@ debug@3.2.7, debug@^3.2.7:
   dependencies:
     ms "^2.1.1"
 
-debug@4, debug@4.3.4, debug@4.x, debug@^4.1.0, debug@^4.1.1, debug@^4.3.4:
+debug@4, debug@4.x, debug@^4.1.0, debug@^4.1.1, debug@^4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
@@ -2745,28 +2736,6 @@ mongodb-connection-string-url@^2.5.3:
     "@types/whatwg-url" "^8.2.1"
     whatwg-url "^11.0.0"
 
-mongodb-memory-server-core@8.8.0:
-  version "8.8.0"
-  resolved "https://registry.yarnpkg.com/mongodb-memory-server-core/-/mongodb-memory-server-core-8.8.0.tgz#c45e3d60ed0299f3216407bce5a72d5121d1935c"
-  integrity sha512-pguLQes27cFhiqs/rRqINst1y2zCMGVNrVEREbvFtKaMTQUh40TU1XeOrVesqu1qYFGHYntYCOzlJueUtl62qQ==
-  dependencies:
-    "@types/tmp" "^0.2.3"
-    async-mutex "^0.3.2"
-    camelcase "^6.3.0"
-    debug "^4.3.4"
-    find-cache-dir "^3.3.2"
-    get-port "^5.1.1"
-    https-proxy-agent "^5.0.1"
-    md5-file "^5.0.0"
-    mongodb "~4.7.0"
-    new-find-package-json "^2.0.0"
-    semver "^7.3.7"
-    tar-stream "^2.1.4"
-    tmp "^0.2.1"
-    tslib "^2.4.0"
-    uuid "^8.3.1"
-    yauzl "^2.10.0"
-
 mongodb-memory-server-core@8.9.3:
   version "8.9.3"
   resolved "https://registry.yarnpkg.com/mongodb-memory-server-core/-/mongodb-memory-server-core-8.9.3.tgz#dd9ebf9b8d35c9bb9beacc52fba87e2ca40f3363"
@@ -2788,14 +2757,6 @@ mongodb-memory-server-core@8.9.3:
     tslib "^2.4.0"
     uuid "^8.3.1"
     yauzl "^2.10.0"
-
-mongodb-memory-server@8.8.0:
-  version "8.8.0"
-  resolved "https://registry.yarnpkg.com/mongodb-memory-server/-/mongodb-memory-server-8.8.0.tgz#f44543160e3de307447ed306beb5d763667a217e"
-  integrity sha512-1cy/N4RC7mH/T8Go6J/vbbOWg5d2YR3DZCnhrRJkhQMUQmEIdU62jqLTepViW7A2LKKweopkfb4PiKAFJV/Z1A==
-  dependencies:
-    mongodb-memory-server-core "8.8.0"
-    tslib "^2.4.0"
 
 mongodb-memory-server@^8.9.3:
   version "8.9.3"
@@ -2826,18 +2787,6 @@ mongodb@^4.10.0:
     denque "^2.1.0"
     mongodb-connection-string-url "^2.5.3"
     socks "^2.7.0"
-  optionalDependencies:
-    saslprep "^1.0.3"
-
-mongodb@~4.7.0:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.7.0.tgz#99f7323271d93659067695b60e7b4efee2de9bf0"
-  integrity sha512-HhVar6hsUeMAVlIbwQwWtV36iyjKd9qdhY+s4wcU8K6TOj4Q331iiMy+FoPuxEntDIijTYWivwFJkLv8q/ZgvA==
-  dependencies:
-    bson "^4.6.3"
-    denque "^2.0.1"
-    mongodb-connection-string-url "^2.5.2"
-    socks "^2.6.2"
   optionalDependencies:
     saslprep "^1.0.3"
 

@@ -7,7 +7,7 @@
   "author": "khallekan <okeolalekanisaac@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn tsc",
+    "build": "tsc",
     "start": "node bin/server.js",
     "dev": "concurrently \" tsc --watch\" \"nodemon -q bin/server.js\"",
     "test": "jest"
@@ -38,7 +38,6 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^4.1.1",
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.3",
     "@types/cookie-session": "^2.0.44",
