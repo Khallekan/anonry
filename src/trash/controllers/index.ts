@@ -1,110 +1,107 @@
-import Trash from "../model/trashModel";
-import catchController from "../../utils/catchControllerAsyncs";
-import createPageInfo from "../../utils/createPagination";
-import { Request, Response, NextFunction } from "express";
-import ResponseStatus from "../../utils/response";
-import Likes from "../../likes/model/likesModel";
-import Entry from "../../entries/model/entriesModel";
-import { StatusCodes } from "http-status-codes";
-import User from "../../users/model/userModel";
-import trashScheduler from "../utils/trash-cron";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+
+import Trash from '../model/trashModel';
+import trashScheduler from '../utils/trash-cron';
+import Entry from '../../entries/model/entriesModel';
+import Likes from '../../likes/model/likesModel';
+import User from '../../users/model/userModel';
+import catchController from '../../utils/catchControllerAsyncs';
+import createPageInfo from '../../utils/createPagination';
+import ResponseStatus from '../../utils/response';
 
 export const trashCron = trashScheduler();
 
 const resp = new ResponseStatus();
 
-export const getTrash = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const user_id: string = req.user._id;
-    let sort: string,
-      limit: number,
-      page: number,
-      totalDocuments: number,
-      type: "entry" | "task" | undefined;
+export const getTrash = catchController(async (req: Request, res: Response) => {
+  const user_id: string = req.user._id;
+  let type: 'entry' | 'task' | undefined;
 
-    // If page and limit are of invalid types return error
-    if (req.query.page && typeof req.query.page != "string") {
-      return resp
-        .setError(StatusCodes.BAD_REQUEST, "Page must be a string")
-        .send(res);
-    }
-    if (req.query.limit && typeof req.query.limit != "string") {
-      return resp
-        .setError(StatusCodes.BAD_REQUEST, "Limit must be a string")
-        .send(res);
-    }
-    if (req.query.sort && typeof req.query.sort != "string") {
-      return resp
-        .setError(StatusCodes.BAD_REQUEST, "Sort must be a string")
-        .send(res);
-    }
-    if (req.query.type && typeof req.query.type != "string") {
-      return resp
-        .setError(StatusCodes.BAD_REQUEST, "Type must either be entry or task")
-        .send(res);
-    }
-    limit = req.query.limit ? parseInt(req.query.limit) : 20;
-    page = req.query.page ? parseInt(req.query.page) : 1;
-    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
-    if (
-      (req.query.type && req.query.type === "entry") ||
-      req.query.type === "task"
-    ) {
-      type = req.query.type;
-    }
-
-    // calculate the start index of the documents to be returned
-    const startIndex = (page - 1) * limit;
-
-    // define the type of the search object
-    interface ISearchBy {
-      user: string;
-      type?: "entry" | "task";
-    }
-
-    // define parameters to search by
-    const searchBy: ISearchBy = {
-      user: user_id,
-    };
-
-    if (type) {
-      searchBy.type = type;
-    }
-
-    // count documents that match the searchBy
-    totalDocuments = await Trash.countDocuments(searchBy);
-
-    const pageInfo = createPageInfo({
-      limit,
-      page,
-      startIndex,
-      totalDocuments,
-    });
-
-    // find all the entries in the trash
-    const trash = await Trash.find(searchBy)
-      .sort(sort)
-      .limit(limit)
-      .skip(startIndex);
-
-    resp
-      .setSuccess(
-        StatusCodes.OK,
-        { trash, pageInfo },
-        "Trash fetched successfully"
-      )
+  // If page and limit are of invalid types return error
+  if (req.query.page && typeof req.query.page != 'string') {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, 'Page must be a string')
       .send(res);
   }
-);
+  if (req.query.limit && typeof req.query.limit != 'string') {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, 'Limit must be a string')
+      .send(res);
+  }
+  if (req.query.sort && typeof req.query.sort != 'string') {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, 'Sort must be a string')
+      .send(res);
+  }
+  if (req.query.type && typeof req.query.type != 'string') {
+    return resp
+      .setError(StatusCodes.BAD_REQUEST, 'Type must either be entry or task')
+      .send(res);
+  }
+  const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const sort = req.query.sort
+    ? req.query.sort.split(',').join(' ')
+    : '-createdAt';
+  if (
+    (req.query.type && req.query.type === 'entry') ||
+    req.query.type === 'task'
+  ) {
+    type = req.query.type;
+  }
+
+  // calculate the start index of the documents to be returned
+  const startIndex = (page - 1) * limit;
+
+  // define the type of the search object
+  interface ISearchBy {
+    user: string;
+    type?: 'entry' | 'task';
+  }
+
+  // define parameters to search by
+  const searchBy: ISearchBy = {
+    user: user_id,
+  };
+
+  if (type) {
+    searchBy.type = type;
+  }
+
+  // count documents that match the searchBy
+  const totalDocuments = await Trash.countDocuments(searchBy);
+
+  const pageInfo = createPageInfo({
+    limit,
+    page,
+    startIndex,
+    totalDocuments,
+  });
+
+  // find all the entries in the trash
+  const trash = await Trash.find(searchBy)
+    .sort(sort)
+    .limit(limit)
+    .skip(startIndex);
+
+  resp
+    .setSuccess(
+      StatusCodes.OK,
+      { trash, pageInfo },
+      'Trash fetched successfully'
+    )
+    .send(res);
+});
 
 export const restoreTrash = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user = req.user._id;
     const trash_id: string[] | undefined = req.body.trash;
 
     if (!trash_id || !trash_id.length) {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Trash Id missing")
+        .setError(StatusCodes.BAD_REQUEST, 'Trash Id missing')
         .send(res);
     }
 
@@ -112,7 +109,7 @@ export const restoreTrash = catchController(
 
     if (trashItem.length !== trash_id.length) {
       return resp
-        .setError(StatusCodes.NOT_FOUND, "Some Items are not in your trash")
+        .setError(StatusCodes.NOT_FOUND, 'Some Items are not in your trash')
         .send(res);
     }
 
@@ -125,7 +122,7 @@ export const restoreTrash = catchController(
 
     if (entries.length !== trashItem.length) {
       return resp
-        .setError(StatusCodes.NOT_FOUND, "Some entries are not found")
+        .setError(StatusCodes.NOT_FOUND, 'Some entries are not found')
         .send(res);
     }
 
@@ -135,7 +132,7 @@ export const restoreTrash = catchController(
     });
 
     resp
-      .setSuccess(StatusCodes.OK, null, "Entries restored successfully")
+      .setSuccess(StatusCodes.OK, null, 'Entries restored successfully')
       .send(res);
 
     const entriesLength = entries.length;
@@ -148,7 +145,7 @@ export const restoreTrash = catchController(
       },
     };
 
-    const data = await User.findByIdAndUpdate(user, update, { new: true });
+    await User.findByIdAndUpdate(user, update, { new: true });
 
     await Trash.deleteMany({ _id: { $in: trash_id } });
 
@@ -160,26 +157,28 @@ export const restoreTrash = catchController(
 );
 
 export const deleteTrash = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user = req.user._id;
-    let trash_id: string[];
 
-    if (!req.query.trash || typeof req.query.trash != "string") {
+    if (!req.query.trash || typeof req.query.trash != 'string') {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Trash Id missing")
+        .setError(StatusCodes.BAD_REQUEST, 'Trash Id missing')
         .send(res);
     }
 
     // regex that matches space
     const spaceRegex = /\s/g;
 
-    trash_id = req.query.trash.trim().replace(spaceRegex, "").split(",");
+    const trash_id: string[] = req.query.trash
+      .trim()
+      .replace(spaceRegex, '')
+      .split(',');
 
     const trashItem = await Trash.find({ _id: { $in: trash_id }, user });
 
     if (trashItem.length !== trash_id.length) {
       return resp
-        .setError(StatusCodes.NOT_FOUND, "Some items are not in your trash")
+        .setError(StatusCodes.NOT_FOUND, 'Some items are not in your trash')
         .send(res);
     }
 
@@ -190,7 +189,7 @@ export const deleteTrash = catchController(
     });
 
     if (entry.length !== trashItem.length) {
-      return resp.setError(StatusCodes.NOT_FOUND, "Entry not found").send(res);
+      return resp.setError(StatusCodes.NOT_FOUND, 'Entry not found').send(res);
     }
 
     await entry.forEach(async (entry) => {
@@ -199,18 +198,17 @@ export const deleteTrash = catchController(
     });
 
     resp
-      .setSuccess(StatusCodes.OK, null, "Entries deleted successfully")
+      .setSuccess(StatusCodes.OK, null, 'Entries deleted successfully')
       .send(res);
 
     await Trash.deleteMany({
       _id: { $in: trashItem.map((trash) => trash._id) },
     });
-    return;
   }
 );
 
 export const restoreAll = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user = req.user._id;
 
     const trashItems = await Trash.find({ user: user });
@@ -219,7 +217,7 @@ export const restoreAll = catchController(
       return resp
         .setError(
           StatusCodes.NOT_ACCEPTABLE,
-          "Your trash is empty anonymous one!"
+          'Your trash is empty anonymous one!'
         )
         .send(res);
     }
@@ -233,7 +231,7 @@ export const restoreAll = catchController(
 
     if (entries.length !== trashItems.length) {
       return resp
-        .setError(StatusCodes.NOT_FOUND, "Some entries are not found")
+        .setError(StatusCodes.NOT_FOUND, 'Some entries are not found')
         .send(res);
     }
 
@@ -243,7 +241,7 @@ export const restoreAll = catchController(
     });
 
     resp
-      .setSuccess(StatusCodes.OK, null, "Entries restored successfully")
+      .setSuccess(StatusCodes.OK, null, 'Entries restored successfully')
       .send(res);
 
     const entriesLength = entries.length;
@@ -267,7 +265,7 @@ export const restoreAll = catchController(
 );
 
 export const deleteAll = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user = req.user._id;
 
     const trashItems = await Trash.find({ user: user });
@@ -276,7 +274,7 @@ export const deleteAll = catchController(
       return resp
         .setError(
           StatusCodes.NOT_ACCEPTABLE,
-          "Your trash is empty anonymous one!"
+          'Your trash is empty anonymous one!'
         )
         .send(res);
     }
@@ -292,7 +290,7 @@ export const deleteAll = catchController(
       return resp
         .setError(
           StatusCodes.NOT_FOUND,
-          "Some entries not are not in your trash anonymous one!"
+          'Some entries not are not in your trash anonymous one!'
         )
         .send(res);
     }
@@ -305,7 +303,7 @@ export const deleteAll = catchController(
         _id: { $in: trashItems.map((trash) => trash._id) },
       });
     return resp
-      .setSuccess(StatusCodes.OK, null, "Entries deleted successfully")
+      .setSuccess(StatusCodes.OK, null, 'Entries deleted successfully')
       .send(res);
   }
 );

@@ -1,29 +1,30 @@
-import { Schema, model } from "mongoose";
-import { ITrash } from "../../common/types";
+import { model, Schema } from 'mongoose';
+
+import { ITrash } from '../../common/types';
 
 const trashModel = new Schema<ITrash>(
   {
     type: {
       type: String,
-      enum: ["entry", "task"],
-      required: [true, "Please provide a type"],
+      enum: ['entry', 'task'],
+      required: [true, 'Please provide a type'],
     },
     entry: {
       type: Schema.Types.ObjectId,
-      ref: "entries",
+      ref: 'entries',
     },
     task: {
       type: Schema.Types.ObjectId,
-      ref: "tasks",
+      ref: 'tasks',
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: "users",
-      required: [true, "Please provide a user"],
+      ref: 'users',
+      required: [true, 'Please provide a user'],
     },
     expiry_date: {
       type: Date,
-      required: [true, "Please provide a date"],
+      required: [true, 'Please provide a date'],
     },
   },
   { timestamps: true }
@@ -32,12 +33,12 @@ const trashModel = new Schema<ITrash>(
 trashModel.pre(/^find/, function (next) {
   // select only the avatar user_name and _id when populating
   this.populate(
-    "entry",
-    "+title +description +tags +no_of_likes -user -liked_by -no_of_comments -__v"
+    'entry',
+    '+title +description +tags +no_of_likes -user -liked_by -no_of_comments -__v'
   );
-  this.populate("task");
+  this.populate('task');
 
   next();
 });
 
-export default model<ITrash>("trash", trashModel);
+export default model<ITrash>('trash', trashModel);

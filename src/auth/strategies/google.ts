@@ -1,15 +1,16 @@
-import passport from "passport";
+import passport from 'passport';
 import {
   Profile,
   Strategy as GoogleStrategy,
   VerifyCallback,
-} from "passport-google-oauth20";
-import User from "../../users/model/userModel";
-import { rand } from "../../utils/randomNumber";
+} from 'passport-google-oauth20';
+
+import User from '../../users/model/userModel';
+import { rand } from '../../utils/randomNumber';
 // generate a random whole number between 1 and 1 million
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -34,7 +35,7 @@ passport.use(
       clientID: `${process.env.OAUTH_CLIENT_ID}`,
       clientSecret: `${process.env.OAUTH_CLIENT_SECRET}`,
       callbackURL: `/users/auth/signup/google/callback`,
-      scope: ["email", "profile"],
+      scope: ['email', 'profile'],
       passReqToCallback: true,
     },
     async (
@@ -45,7 +46,7 @@ passport.use(
       done: VerifyCallback
     ) => {
       const user = await User.findOne({
-        $or: [{ "google.id": profile.id }, { email: profile._json.email }],
+        $or: [{ 'google.id': profile.id }, { email: profile._json.email }],
       });
 
       if (!user) {
@@ -59,47 +60,47 @@ passport.use(
           };
           user_name: string;
           email: string;
-          role: "user";
+          role: 'user';
           avatar?: string;
           verified: boolean;
-          status: "verified";
+          status: 'verified';
         } = {
           google: {
             id: profile.id,
             name: profile.displayName,
-            email: profile._json.email || "",
+            email: profile._json.email || '',
           },
           user_name: profile.displayName
             .trim()
-            .replace(spaceRegex, "_")
+            .replace(spaceRegex, '_')
             .toLowerCase(),
-          email: profile._json.email || "",
-          role: "user",
+          email: profile._json.email || '',
+          role: 'user',
           verified: true,
-          status: "verified",
+          status: 'verified',
         };
         const existingUserName = await User.findOne({
-          user_name: { $regex: userObj.user_name, $options: "i" },
+          user_name: { $regex: userObj.user_name, $options: 'i' },
         });
 
-        let userNameExists: boolean = !!existingUserName;
+        let userNameExists = !!existingUserName;
         console.log({ userNameExists, userName: userObj.user_name });
 
         while (userNameExists) {
-          console.log("ENTERED HERE FOR SOME REASON");
+          console.log('ENTERED HERE FOR SOME REASON');
 
           userObj.user_name = `${profile.displayName
             .trim()
-            .replace(spaceRegex, "_")
+            .replace(spaceRegex, '_')
             .toLocaleLowerCase()}_${rand()}`;
           const newUserNameExists = await User.findOne({
             $regex: userObj.user_name,
-            $options: "i",
+            $options: 'i',
           });
           console.log({ newUserNameExists, userName: userObj.user_name });
 
           if (newUserNameExists) {
-            console.log("ALLOWS THE WHILE LOOP EXIT");
+            console.log('ALLOWS THE WHILE LOOP EXIT');
 
             userNameExists = false;
           }

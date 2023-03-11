@@ -1,10 +1,11 @@
-import cron from "node-cron";
-import Trash from "../model/trashModel";
-import Entry from "../../entries/model/entriesModel";
+import cron from 'node-cron';
+
+import Trash from '../model/trashModel';
+import Entry from '../../entries/model/entriesModel';
 
 const trashScheduler = () => {
   // run cronjob every minute
-  return cron.schedule("*/60 * * * * *", async () => {
+  return cron.schedule('*/60 * * * * *', async () => {
     const date = new Date();
     const ISODate = date.toISOString();
     const hour = date.getHours();
@@ -13,10 +14,10 @@ const trashScheduler = () => {
     console.log(`${hour}:${minute}:${seconds}`);
 
     try {
-      console.log("STARTING TRASH GARBAGE COLLECTION");
+      console.log('STARTING TRASH GARBAGE COLLECTION');
       const trash = await Trash.find({ expiry_date: { $lte: ISODate } });
       if (!trash.length) {
-        return console.log("NO GARBAGE TO BE TRASHED");
+        return console.log('NO GARBAGE TO BE TRASHED');
       }
 
       const entries = await Entry.find({
@@ -24,17 +25,19 @@ const trashScheduler = () => {
         deleted: true,
         permanently_deleted: false,
       });
-      console.log("STARTING DELETING TRASH");
-      await entries.forEach(async (entry) => {
-        entry.permanently_deleted = true;
-        await entry.save();
-      }),
-        await Trash.deleteMany({
-          _id: { $in: trash.map((trash) => trash._id) },
-        });
-      console.log("ENDING DELETING TRASH");
+      console.log('STARTING DELETING TRASH');
+      await Entry.updateMany(
+        {
+          _id: { $in: entries.map((entry) => entry._id) },
+        },
+        { permanently_deleted: true }
+      );
+      await Trash.deleteMany({
+        _id: { $in: trash.map((trash) => trash._id) },
+      });
+      console.log('ENDING DELETING TRASH');
     } catch (error) {
-      console.error("SOMETHING WENT WRONG IN CLEARING THE TRASH");
+      console.error('SOMETHING WENT WRONG IN CLEARING THE TRASH');
       console.error(error);
     }
   });

@@ -1,27 +1,27 @@
-import Tag from "../model/tagsModel";
-import { StatusCodes } from "http-status-codes";
-import { NextFunction, Request, Response } from "express";
-import ResponseStatus from "../../utils/response";
-import catchController from "../../utils/catchControllerAsyncs";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
+import Tag from '../model/tagsModel';
+import catchController from '../../utils/catchControllerAsyncs';
+import ResponseStatus from '../../utils/response';
 
 const resp = new ResponseStatus();
 
 export const getAllTags = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const tags = await Tag.find().sort("name");
+  async (req: Request, res: Response) => {
+    const tags = await Tag.find().sort('name');
     return resp
-      .setSuccess(StatusCodes.OK, tags, "Tags fetched successfully")
+      .setSuccess(StatusCodes.OK, tags, 'Tags fetched successfully')
       .send(res);
   }
 );
 
 export const createTag = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const tag: string | undefined = req.body.tag;
     if (!tag) {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Tag is required")
+        .setError(StatusCodes.BAD_REQUEST, 'Tag is required')
         .send(res);
     }
 
@@ -30,7 +30,7 @@ export const createTag = catchController(
     });
 
     return resp
-      .setSuccess(StatusCodes.OK, newTag, "Tag created successfully")
+      .setSuccess(StatusCodes.OK, newTag, 'Tag created successfully')
       .send(res);
   }
 );

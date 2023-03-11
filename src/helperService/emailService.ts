@@ -1,6 +1,6 @@
-import nodemailer from "nodemailer";
-import path from "path";
-import pug from "pug";
+import nodemailer from 'nodemailer';
+import path from 'path';
+import pug from 'pug';
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: 465,
@@ -10,38 +10,38 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
 });
+const emailPath = '../../emailViews/';
+
 export const sendOTP = async (
   user_name: string,
   email: string,
   message: string,
   otp: string,
   link: string
-) =>
-  // eslint-disable-next-line consistent-return
-  {
-    try {
-      const html = pug.renderFile(
-        path.join(__dirname, "../../emailViews/", "verifyEmail.pug"),
-        {
-          user_name,
-          subject:
-            "Welcome to Anonry. Glad to have you on board. We just need to verify your email",
-          message,
-          link,
-          otp,
-        }
-      );
-      const mailOptions = {
-        from: `Anonry <${process.env.EMAIL_USERNAME}>`,
-        subject: "Verify your email",
-        to: email,
-        html,
-      };
-      await transporter.sendMail(mailOptions);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+) => {
+  try {
+    const html = pug.renderFile(
+      path.join(__dirname, emailPath, 'verifyEmail.pug'),
+      {
+        user_name,
+        subject:
+          'Welcome to Anonry. Glad to have you on board. We just need to verify your email',
+        message,
+        link,
+        otp,
+      }
+    );
+    const mailOptions = {
+      from: `Anonry <${process.env.EMAIL_USERNAME}>`,
+      subject: 'Verify your email',
+      to: email,
+      html,
+    };
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export const sendPasswordResetLink = async (
   user_name: string,
@@ -52,10 +52,10 @@ export const sendPasswordResetLink = async (
 ) => {
   try {
     const html = pug.renderFile(
-      path.join(__dirname, "../../emailViews/", "passwordReset.pug"),
+      path.join(__dirname, emailPath, 'passwordReset.pug'),
       {
         user_name,
-        subject: "Reset your password",
+        subject: 'Reset your password',
         link,
         otp,
         message,
@@ -63,7 +63,7 @@ export const sendPasswordResetLink = async (
     );
     const mailOptions = {
       from: `Anonry <${process.env.EMAIL_USERNAME}>`,
-      subject: "Reset your password",
+      subject: 'Reset your password',
       to: email,
       html,
     };
@@ -80,16 +80,16 @@ export const sendPasswordChanged = async (
 ) => {
   try {
     const html = pug.renderFile(
-      path.join(__dirname, "../../emailViews/", "passwordChanged.pug"),
+      path.join(__dirname, emailPath, 'passwordChanged.pug'),
       {
         user_name,
-        subject: "Your password has been changed",
+        subject: 'Your password has been changed',
         message,
       }
     );
     const mailOptions = {
       from: `Anonry <${process.env.EMAIL_USERNAME}>`,
-      subject: "Password Updated",
+      subject: 'Password Updated',
       to: email,
       html,
     };
@@ -104,22 +104,22 @@ export const sendLoginEmail = async (
   email: string,
   message: string
 ) => {
-  console.log("sendLoginEmail");
+  console.log('sendLoginEmail');
 
   console.log({ user_name, email, message });
 
   try {
     const html = pug.renderFile(
-      path.join(__dirname, "../../emailViews/", "loginEmail.pug"),
+      path.join(__dirname, emailPath, 'loginEmail.pug'),
       {
         user_name,
-        subject: "Hello anonymous one",
+        subject: 'Hello anonymous one',
         message,
       }
     );
     const mailOptions = {
       from: `Anonry <${process.env.EMAIL_USERNAME}>`,
-      subject: "Login Notification",
+      subject: 'Login Notification',
       to: email,
       html,
     };

@@ -1,9 +1,10 @@
-import { Router } from "express";
-import verifyToken from "../../utils/verifyToken";
-import { createTag, getAllTags } from "../controllers";
+import { Router } from 'express';
+
+import { createTag, getAllTags } from '../controllers';
+import verifyToken from '../../utils/verifyToken';
 
 const router = Router();
 
-router.route("/").post(verifyToken, createTag).get(verifyToken, getAllTags);
+router.route('/').post(verifyToken, createTag).get(verifyToken, getAllTags);
 
 export default router;

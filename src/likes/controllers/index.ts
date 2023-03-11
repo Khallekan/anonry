@@ -1,34 +1,34 @@
-import catchController from "../../utils/catchControllerAsyncs";
-import Entry from "../../entries/model/entriesModel";
-import Likes from "../model/likesModel";
-import User from "../../users/model/userModel";
-import ResponseStatus from "../../utils/response";
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import createPageInfo from "../../utils/createPagination";
-import { IUser } from "../../common/types";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+
+import Likes from '../model/likesModel';
+import Entry from '../../entries/model/entriesModel';
+import User from '../../users/model/userModel';
+import catchController from '../../utils/catchControllerAsyncs';
+import createPageInfo from '../../utils/createPagination';
+import ResponseStatus from '../../utils/response';
 const resp = new ResponseStatus();
 
 export const handleLikes = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const liked_by = req.user._id;
 
     const entry_id: undefined | string = req.body.entry_id;
-    const action: "like" | "unlike" | undefined = req.body.action;
+    const action: 'like' | 'unlike' | undefined = req.body.action;
 
     if (!entry_id) {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Entry id is required")
+        .setError(StatusCodes.BAD_REQUEST, 'Entry id is required')
         .send(res);
     }
 
-    if (!action || !["like", "unlike"].includes(action)) {
+    if (!action || !['like', 'unlike'].includes(action)) {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Action is required")
+        .setError(StatusCodes.BAD_REQUEST, 'Action is required')
         .send(res);
     }
 
-    let entry = await Entry.findOne({ _id: entry_id, deleted: false });
+    const entry = await Entry.findOne({ _id: entry_id, deleted: false });
 
     if (!entry) {
       return resp
@@ -41,16 +41,16 @@ export const handleLikes = catchController(
 
     if (!entry.published) {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Cannot like an unpubilished entry")
+        .setError(StatusCodes.BAD_REQUEST, 'Cannot like an unpubilished entry')
         .send(res);
     }
 
     const isLiked = await Likes.findOne({ entry: entry_id, liked_by });
 
-    if (action === "unlike") {
+    if (action === 'unlike') {
       if (!isLiked) {
         return resp
-          .setError(StatusCodes.FORBIDDEN, "Entry is not liked")
+          .setError(StatusCodes.FORBIDDEN, 'Entry is not liked')
           .send(res);
       }
       // reduce no of likes of entry by 1 and remove user id from the liked_by array in the entry
@@ -64,7 +64,7 @@ export const handleLikes = catchController(
       entry.isLiked = false;
 
       resp
-        .setSuccess(StatusCodes.OK, entry, "Entry unliked successfully")
+        .setSuccess(StatusCodes.OK, entry, 'Entry unliked successfully')
         .send(res);
 
       await Likes.findOneAndDelete({ entry_id, liked_by });
@@ -85,10 +85,10 @@ export const handleLikes = catchController(
       return;
     }
 
-    if (action === "like") {
+    if (action === 'like') {
       if (isLiked) {
         return resp
-          .setError(StatusCodes.BAD_REQUEST, "Entry already liked")
+          .setError(StatusCodes.BAD_REQUEST, 'Entry already liked')
           .send(res);
       }
       // if the entry is not liked by the user, then add the like to the likes collection
@@ -103,7 +103,7 @@ export const handleLikes = catchController(
 
       entry.isLiked = true;
       resp
-        .setSuccess(StatusCodes.OK, entry, "Entry liked successfully")
+        .setSuccess(StatusCodes.OK, entry, 'Entry liked successfully')
         .send(res);
 
       // for future reference, if we want to add the user id to the liked_by array in the entry
@@ -120,49 +120,44 @@ export const handleLikes = catchController(
         { $inc: { no_of_likes_given: 1 } },
         { new: true }
       );
-
-      return;
     }
   }
 );
 
 export const getLikesPerUser = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user_name: string | undefined = req.params.user_id;
-    console.log("HIT");
-    let user: IUser;
+    console.log('HIT');
     let user_id: string;
     if (user_name) {
       const user = await User.findOne({ user_name });
       if (!user) {
-        return resp.setError(StatusCodes.NOT_FOUND, "User not found").send(res);
+        return resp.setError(StatusCodes.NOT_FOUND, 'User not found').send(res);
       }
       user_id = user._id;
     } else {
       user_id = req.user._id;
     }
 
-    let page: number, limit: number, sort: string, totalDocuments: number;
-
-    if (req.query.page && typeof req.query.page != "string") {
+    if (req.query.page && typeof req.query.page != 'string') {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Page must be a string")
+        .setError(StatusCodes.BAD_REQUEST, 'Page must be a string')
         .send(res);
     }
-    if (req.query.limit && typeof req.query.limit != "string") {
+    if (req.query.limit && typeof req.query.limit != 'string') {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Limit must be a string")
+        .setError(StatusCodes.BAD_REQUEST, 'Limit must be a string')
         .send(res);
     }
-    if (req.query.sort && typeof req.query.sort != "string") {
+    if (req.query.sort && typeof req.query.sort != 'string') {
       return resp
-        .setError(StatusCodes.BAD_REQUEST, "Sort must be a string")
+        .setError(StatusCodes.BAD_REQUEST, 'Sort must be a string')
         .send(res);
     }
 
-    page = req.query.page ? parseInt(req.query.page) : 1;
-    limit = req.query.limit ? parseInt(req.query.limit) : 20;
-    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+    //  const  sort = req.query.sort ? req.query.sort.split(',').join(' ') : '-createdAt';
 
     const startIndex = (page - 1) * limit;
 
@@ -178,7 +173,7 @@ export const getLikesPerUser = catchController(
       entry_unpublished: { $in: [false, undefined, null] },
     };
 
-    totalDocuments = await Likes.countDocuments(searchObj);
+    const totalDocuments = await Likes.countDocuments(searchObj);
 
     const pageInfo = createPageInfo({
       page,
@@ -188,7 +183,7 @@ export const getLikesPerUser = catchController(
     });
 
     const likes = await Likes.find(searchObj)
-      .select("-__v -updatedAt")
+      .select('-__v -updatedAt')
       .limit(limit)
       .skip(startIndex);
 
@@ -196,7 +191,7 @@ export const getLikesPerUser = catchController(
       .setSuccess(
         StatusCodes.OK,
         { likes, pageInfo },
-        "Likes retrieved successfully"
+        'Likes retrieved successfully'
       )
       .send(res);
   }

@@ -1,9 +1,10 @@
-import { Router } from "express";
-import verifyToken from "../../utils/verifyToken";
-import { getUserProfile } from "../controllers";
+import { Router } from 'express';
+
+import { getUserProfile } from '../controllers';
+import verifyToken from '../../utils/verifyToken';
 
 const router = Router();
 
-router.route("/").get(verifyToken, getUserProfile);
+router.route('/').get(verifyToken, getUserProfile);
 
 export default router;

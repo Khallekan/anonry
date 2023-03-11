@@ -1,48 +1,69 @@
-import { NextFunction, Request, Response } from "express";
-import Entry from "../../entries/model/entriesModel";
-import { StatusCodes } from "http-status-codes";
-import ResponseStatus from "../../utils/response";
-import catchController from "../../utils/catchControllerAsyncs";
-import createPageInfo from "../../utils/createPagination";
-import Likes from "../../likes/model/likesModel";
-import Tags from "../../tags/model/tagsModel";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
+
+import { IEntry, ILikesModel } from '../../common/types';
+import Entry from '../../entries/model/entriesModel';
+import Likes from '../../likes/model/likesModel';
+import Tags from '../../tags/model/tagsModel';
+import catchController from '../../utils/catchControllerAsyncs';
+import createPageInfo from '../../utils/createPagination';
+import ResponseStatus from '../../utils/response';
 
 const resp = new ResponseStatus();
 
+const checkIfLiked = (
+  likes: (ILikesModel & {
+    _id: Types.ObjectId;
+  })[],
+  entries: (IEntry & {
+    _id: Types.ObjectId;
+  })[]
+) => {
+  likes.forEach((like) => {
+    const entry = entries.find(
+      (entry) => entry._id.toString() === like.entry._id.toString()
+    );
+    if (entry) {
+      entry.isLiked = true;
+    }
+  });
+
+  return entries;
+};
+
 export const getTimeline = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user_id: string = req.user._id;
-    let sort: string,
-      limit: number,
-      page: number,
-      totalDocuments: number,
-      tags: string[];
+    let tags: string[];
 
     // If page and limit are of invalid types return error
-    if (req.query.page && typeof req.query.page != "string") {
+    if (req.query.page && typeof req.query.page != 'string') {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid page number" });
+        .json({ success: false, message: 'Invalid page number' });
     }
-    if (req.query.limit && typeof req.query.limit != "string") {
+    if (req.query.limit && typeof req.query.limit != 'string') {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid limit number" });
+        .json({ success: false, message: 'Invalid limit number' });
     }
-    if (req.query.sort && typeof req.query.sort != "string") {
+    if (req.query.sort && typeof req.query.sort != 'string') {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid sort value" });
+        .json({ success: false, message: 'Invalid sort value' });
     }
-    if (req.query.tags && typeof req.query.tags != "string") {
+    if (req.query.tags && typeof req.query.tags != 'string') {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid tags value" });
+        .json({ success: false, message: 'Invalid tags value' });
     }
 
-    limit = req.query.limit ? parseInt(req.query.limit) : 20;
-    page = req.query.page ? parseInt(req.query.page) : 1;
-    sort = req.query.sort ? req.query.sort.split(",").join(" ") : "-createdAt";
+    const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const sort = req.query.sort
+      ? req.query.sort.split(',').join(' ')
+      : '-createdAt';
 
     // calculate the start index of the documents to be returned
     const startIndex = (page - 1) * limit;
@@ -62,40 +83,31 @@ export const getTimeline = catchController(
 
     // if tags are provided, add them to the search object
     if (req.query.tags) {
-      tags = req.query.tags.split(",");
+      tags = req.query.tags.split(',');
       const tagsExist = await Tags.find({ name: { $in: tags } });
       if (tagsExist.length !== tags.length) {
         return resp
-          .setError(StatusCodes.NOT_FOUND, "Some tags do not exist")
+          .setError(StatusCodes.NOT_FOUND, 'Some tags do not exist')
           .send(res);
       }
       searchBy.tags = { $in: tagsExist.map((tag) => tag._id) };
     }
 
-    console.log({ location: "timeline", searchBy });
-
-    totalDocuments = await Entry.countDocuments(searchBy);
+    const totalDocuments = await Entry.countDocuments(searchBy);
 
     let entries = await Entry.find(searchBy)
       .limit(limit)
       .skip(startIndex)
       .sort(sort)
-      .select("-__v");
+      .select('-__v');
 
     const likes = await Likes.find({
       entry: { $in: entries.map((entry) => entry._id) },
       liked_by: user_id,
     });
 
-    if (likes.length > 0) {
-      likes.forEach((like) => {
-        const entry = entries.find(
-          (entry) => entry._id.toString() === like.entry._id.toString()
-        );
-        if (entry) {
-          entry.isLiked = true;
-        }
-      });
+    if (likes.length) {
+      entries = checkIfLiked(likes, entries);
     }
 
     const pageInfo = createPageInfo({
@@ -109,7 +121,7 @@ export const getTimeline = catchController(
       .setSuccess(
         StatusCodes.OK,
         { entries, pageInfo },
-        "Timeline fetched successfully"
+        'Timeline fetched successfully'
       )
       .send(res);
   }
