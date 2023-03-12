@@ -16,8 +16,7 @@ mongoose.connect(DB).then(() => {
   console.log('DB connection successful');
 });
 const starq = http.createServer(app);
-
-const port = process.env.PORT || 7100;
+const port = Number(`${process.env.PORT}`) || 7100;
 
 const server = starq.listen(port, () => {
   `server running on port: ${port}`;

@@ -444,7 +444,7 @@ export const login = catchController(async (req: Request, res: Response) => {
     // get timezone
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const message = `Please be informed that your anonry account has been accessed on - ${time} ${timezone}`;
-    await sendLoginEmail(user.user_name, user.email, message);
+    sendLoginEmail(user.user_name, user.email, message);
     return;
   }
   return res.status(StatusCodes.BAD_REQUEST).json({
