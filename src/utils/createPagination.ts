@@ -1,4 +1,4 @@
-import { IPageInfo } from "../common/types";
+import { IPageData, IPageInfo } from '../common/types';
 
 const createPageInfo = ({
   page,
@@ -36,4 +36,42 @@ const createPageInfo = ({
   return pageInfo;
 };
 
+export const createPageData = (arg: {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  totalHits: number;
+  nextPage?: number | null;
+  prevPage?: number | null;
+}): IPageData => {
+  const {
+    page,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    totalHits,
+    nextPage,
+    prevPage,
+  } = arg;
+  const pageData: IPageData = {
+    totalPages,
+    page,
+    totalHits,
+  };
+
+  if (hasNextPage && typeof nextPage === 'number') {
+    pageData.next = {
+      page: nextPage,
+    };
+  }
+
+  if (hasPrevPage && typeof prevPage === 'number') {
+    pageData.previous = {
+      page: prevPage,
+    };
+  }
+
+  return pageData;
+};
 export default createPageInfo;

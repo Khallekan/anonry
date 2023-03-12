@@ -1,24 +1,31 @@
-import { Response, NextFunction, Request, response } from "express";
-import isEmail from "validator/lib/isEmail";
-import User from "../../users/model/userModel";
+import axios from 'axios';
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import jwt from 'jsonwebtoken';
+import isEmail from 'validator/lib/isEmail';
+
 import {
   sendLoginEmail,
   sendOTP,
   sendPasswordChanged,
   sendPasswordResetLink,
-} from "../../helperService/emailService";
-import { StatusCodes } from "http-status-codes";
-import catchController from "../../utils/catchControllerAsyncs";
-import generateToken from "../../utils/generateToken";
-import ResponseStatus from "../../utils/response";
-import jwt from "jsonwebtoken";
-import axios from "axios";
-import { rand } from "../../utils/randomNumber";
+} from '../../helperService/emailService';
+import User from '../../users/model/userModel';
+import catchController from '../../utils/catchControllerAsyncs';
+import generateToken from '../../utils/generateToken';
+import { rand } from '../../utils/randomNumber';
+import ResponseStatus from '../../utils/response';
 
 const resp = new ResponseStatus();
 
+const passRequredFieldsMessage =
+  'Please make sure you pass all the required fields';
+const passwordRegexMessage =
+  'Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter';
+const userNotFoundMessage = 'User with this email does not exist';
+
 export const createUser = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     // make sure user_name, email and password fields are passed in the req.body
     if (
       !req.body.user_name ||
@@ -29,25 +36,25 @@ export const createUser = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
     const user_name: string = req.body.user_name.trim();
 
     // if user_name has spaces return error
-    if (user_name.includes(" ")) {
+    if (user_name.includes(' ')) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure username does not contain spaces",
+          message: 'Please make sure username does not contain spaces',
         },
       });
     }
 
     const email: string = req.body.email.trim();
     const password: string = req.body.password;
-    const role = "user";
+    const role = 'user';
     // generate a random whole number between 1 and 4 icluding 1 and 4
     const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
     const avatar = `https://robohash.org/${user_name}?set=${randomNumber}&size=500x500`;
@@ -60,8 +67,7 @@ export const createUser = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message:
-            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+          message: passwordRegexMessage,
         },
       });
     }
@@ -70,7 +76,7 @@ export const createUser = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "User name must be at least 3 characters long",
+          message: 'User name must be at least 3 characters long',
         },
       });
     }
@@ -79,7 +85,7 @@ export const createUser = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass a valid email",
+          message: 'Please make sure you pass a valid email',
         },
       });
     }
@@ -103,7 +109,7 @@ export const createUser = catchController(
     if (req.body.user_name) {
       const existingUserName = await User.findOne({
         $regex: user_name,
-        $options: "i",
+        $options: 'i',
       });
       if (existingUserName) {
         return res.status(StatusCodes.CONFLICT).json({
@@ -127,9 +133,9 @@ export const createUser = catchController(
     // Create OTP using createOTP method
     const otp = user.createOTP();
 
-    const message: string = `Use this code to verify your account`;
+    const message = `Use this code to verify your account`;
     // send OTP to user's email
-    let emailResponse = sendOTP(user_name, email, message, otp, link);
+    const emailResponse = sendOTP(user_name, email, message, otp, link);
 
     console.log(emailResponse);
 
@@ -138,21 +144,21 @@ export const createUser = catchController(
     return res.status(StatusCodes.CREATED).json({
       data: {
         status: StatusCodes.CREATED,
-        message: "OTP has been sent to your email",
+        message: 'OTP has been sent to your email',
       },
     });
   }
 );
 
 export const createUserGoogle = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const { token }: { token: string | undefined } = req.body;
 
-    if (!token || typeof token !== "string") {
+    if (!token || typeof token !== 'string') {
       return res.status(StatusCodes.FORBIDDEN).json({
         data: {
           status: StatusCodes.FORBIDDEN,
-          message: "Invalid token or token missing",
+          message: 'Invalid token or token missing',
           data: null,
         },
       });
@@ -171,24 +177,24 @@ export const createUserGoogle = catchController(
         picture: string;
         locale: string;
       };
-    } = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo", {
+    } = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
     const user = await User.findOne({
-      $and: [{ "google.id": googleInfo.id }, { email: googleInfo.email }],
+      $and: [{ 'google.id': googleInfo.id }, { email: googleInfo.email }],
     });
 
-    console.log({ location: "CHECKING IF USER EXISTS USING GOOGLE ID", user });
+    console.log({ location: 'CHECKING IF USER EXISTS USING GOOGLE ID', user });
 
     if (!user) {
       // check if email already exists
       const existingUserEmail = await User.findOne({ email: googleInfo.email });
 
       if (existingUserEmail) {
-        console.log("EMAIL EXISTS");
+        console.log('EMAIL EXISTS');
         return res.status(StatusCodes.CONFLICT).json({
           data: {
             status: StatusCodes.CONFLICT,
@@ -197,7 +203,7 @@ export const createUserGoogle = catchController(
         });
       }
 
-      console.log("GOOGLE SIGNUP");
+      console.log('GOOGLE SIGNUP');
 
       // regex to replace all spaces with underscores
       const userObj: {
@@ -207,10 +213,10 @@ export const createUserGoogle = catchController(
           email: string;
         };
         email: string;
-        role: "user";
+        role: 'user';
         avatar?: string;
         verified: boolean;
-        status: "verified";
+        status: 'verified';
       } = {
         google: {
           id: googleInfo.id,
@@ -218,9 +224,9 @@ export const createUserGoogle = catchController(
           email: googleInfo.email,
         },
         email: googleInfo.email,
-        role: "user",
+        role: 'user',
         verified: true,
-        status: "verified",
+        status: 'verified',
       };
 
       const randomNumber = Math.floor(Math.random() * (4 - 1 + 1)) + 1;
@@ -229,13 +235,13 @@ export const createUserGoogle = catchController(
       const newUser = await User.create(userObj);
 
       const { token: refresh_token, token_expires: refresh_token_expires } =
-        generateToken(newUser._id, "refresh");
+        generateToken(newUser._id, 'refresh');
       const { token: access_token, token_expires: access_token_expires } =
-        generateToken(newUser._id, "access");
+        generateToken(newUser._id, 'access');
       return res.status(StatusCodes.OK).json({
         data: {
           status: StatusCodes.OK,
-          message: "Welcome anonymous one",
+          message: 'Welcome anonymous one',
           data: {
             user: {
               email: newUser.email,
@@ -250,25 +256,25 @@ export const createUserGoogle = catchController(
     }
 
     if (user.deleted) {
-      console.log("USER HAS BEEN DELETED");
+      console.log('USER HAS BEEN DELETED');
       res.status(StatusCodes.NOT_FOUND).json({
         data: {
-          message: "User has been deleted",
+          message: 'User has been deleted',
           status: StatusCodes.NOT_FOUND,
         },
       });
     }
 
-    console.log("GOOGLE SIGNIN");
+    console.log('GOOGLE SIGNIN');
 
     const { token: refresh_token, token_expires: refresh_token_expires } =
-      generateToken(user._id, "refresh");
+      generateToken(user._id, 'refresh');
     const { token: access_token, token_expires: access_token_expires } =
-      generateToken(user._id, "access");
+      generateToken(user._id, 'access');
     return res.status(StatusCodes.OK).json({
       data: {
         status: StatusCodes.OK,
-        message: "Welcome anonymous one",
+        message: 'Welcome anonymous one',
         data: {
           user: {
             user_name: user.user_name,
@@ -285,14 +291,14 @@ export const createUserGoogle = catchController(
 );
 
 export const verifyEmail = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const email: string = req.body.email;
     const otp: string = req.body.otp;
     if (!email || !otp) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
@@ -305,25 +311,25 @@ export const verifyEmail = catchController(
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {
           status: StatusCodes.NOT_FOUND,
-          message: "User with this email does not exist",
+          message: userNotFoundMessage,
         },
       });
     }
     // verify OTP
-    const isValid = user.validateOTP(otp, user.otpToken, "accountVerify");
+    const isValid = user.validateOTP(otp, user.otpToken, 'accountVerify');
     // update user's verified field to true
     if (isValid) {
       const { token: refresh_token, token_expires: refresh_token_expires } =
-        generateToken(user._id, "refresh");
+        generateToken(user._id, 'refresh');
       const { token: access_token, token_expires: access_token_expires } =
-        generateToken(user.id, "access");
+        generateToken(user.id, 'access');
       await user.save();
       return res
         .status(StatusCodes.OK)
         .json({
           data: {
             status: StatusCodes.OK,
-            message: "Your email has been verified",
+            message: 'Your email has been verified',
             data: {
               user: {
                 user_name: user.user_name,
@@ -336,130 +342,128 @@ export const verifyEmail = catchController(
             },
           },
         })
-        .send("<div>Plantain</div>");
+        .send('<div>Plantain</div>');
     }
 
     return res.status(StatusCodes.BAD_REQUEST).json({
       data: {
         status: StatusCodes.BAD_REQUEST,
-        message: "OTP is incorrect",
+        message: 'OTP is incorrect',
       },
     });
   }
 );
 
-export const login = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { identifier, password }: { identifier: string; password: string } =
-      req.body;
-    if (!identifier) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        data: {
-          status: StatusCodes.BAD_REQUEST,
-          message: "Please provide a username or an email",
-        },
-      });
-    }
-    if (!password) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        data: {
-          status: StatusCodes.BAD_REQUEST,
-          message: "Password field cannot be empty",
-        },
-      });
-    }
-    // find user with email or user_name and deleted field is false
-    const user = await User.findOne({
-      $or: [{ email: identifier.trim() }, { user_name: identifier.trim() }],
-    }).select("+password -__v +status");
-    if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        data: {
-          status: StatusCodes.NOT_FOUND,
-          message: "User with this email or username does not exist",
-        },
-      });
-    }
+export const login = catchController(async (req: Request, res: Response) => {
+  const { identifier, password }: { identifier: string; password: string } =
+    req.body;
+  if (!identifier) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      data: {
+        status: StatusCodes.BAD_REQUEST,
+        message: 'Please provide a username or an email',
+      },
+    });
+  }
+  if (!password) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      data: {
+        status: StatusCodes.BAD_REQUEST,
+        message: 'Password field cannot be empty',
+      },
+    });
+  }
+  // find user with email or user_name and deleted field is false
+  const user = await User.findOne({
+    $or: [{ email: identifier.trim() }, { user_name: identifier.trim() }],
+  }).select('+password -__v +status');
+  if (!user) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      data: {
+        status: StatusCodes.NOT_FOUND,
+        message: 'User with this email or username does not exist',
+      },
+    });
+  }
 
-    if (user.deleted) {
-      return res.status(StatusCodes.NOT_FOUND).json({
+  if (user.deleted) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      data: {
+        status: StatusCodes.NOT_FOUND,
+        message: 'This account has been deleted',
+      },
+    });
+  }
+
+  // Check if user is verified
+  if (user.status !== 'verified') {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      data: {
+        status: StatusCodes.UNAUTHORIZED,
+        message: 'Please verify your email first',
+      },
+    });
+  }
+  // console.log({user})
+
+  // verify password
+  const isValid = await user.validatePassword(password);
+
+  // console.log({isValid});
+
+  if (isValid) {
+    const { token: refresh_token, token_expires: refresh_token_expires } =
+      generateToken(user._id, 'refresh');
+    const { token: access_token, token_expires: access_token_expires } =
+      generateToken(user.id, 'access');
+    res.status(StatusCodes.OK).json({
+      data: {
+        status: StatusCodes.OK,
+        message: 'User logged in successfully',
         data: {
-          status: StatusCodes.NOT_FOUND,
-          message: "This account has been deleted",
-        },
-      });
-    }
-
-    // Check if user is verified
-    if (user.status !== "verified") {
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        data: {
-          status: StatusCodes.UNAUTHORIZED,
-          message: "Please verify your email first",
-        },
-      });
-    }
-    // console.log({user})
-
-    // verify password
-    const isValid = await user.validatePassword(password);
-
-    // console.log({isValid});
-
-    if (isValid) {
-      const { token: refresh_token, token_expires: refresh_token_expires } =
-        generateToken(user._id, "refresh");
-      const { token: access_token, token_expires: access_token_expires } =
-        generateToken(user.id, "access");
-      res.status(StatusCodes.OK).json({
-        data: {
-          status: StatusCodes.OK,
-          message: "User logged in successfully",
-          data: {
-            user: {
-              user_name: user.user_name,
-              email: user.email,
-            },
-            refresh_token,
-            access_token,
-            refresh_token_expires,
-            access_token_expires,
+          user: {
+            user_name: user.user_name,
+            email: user.email,
           },
+          refresh_token,
+          access_token,
+          refresh_token_expires,
+          access_token_expires,
         },
-      });
-      // Get date with time in day/month/year 24hr clock
-      const date = new Date();
-      const day = date.getDate();
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
-      const hour = date.getHours();
-      const minute = date.getMinutes();
-      const second = date.getSeconds();
-      const time = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
-      // get timezone
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const message = `Please be informed that your anonry account has been accessed on - ${time} ${timezone}`;
-      await sendLoginEmail(user.user_name, user.email, message);
-      return;
-    }
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      data: {
-        status: StatusCodes.BAD_REQUEST,
-        message: "Password is incorrect",
       },
     });
+    // Get date with time in day/month/year 24hr clock
+    const date = new Date();
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    const second = date.getSeconds();
+    const time = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+    // get timezone
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const message = `Please be informed that your anonry account has been accessed on - ${time} ${timezone}`;
+    sendLoginEmail(user.user_name, user.email, message);
+    return;
   }
-);
+  return res.status(StatusCodes.BAD_REQUEST).json({
+    data: {
+      status: StatusCodes.BAD_REQUEST,
+      message: 'Password is incorrect',
+    },
+  });
+});
 
 export const resendOTP = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const email: string = req.body.email;
     const link: string = req.body.link;
     if (!email || !link) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
@@ -473,14 +477,14 @@ export const resendOTP = catchController(
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {
           status: StatusCodes.NOT_FOUND,
-          message: "User with this email does not exist",
+          message: userNotFoundMessage,
         },
       });
     }
     // Create OTP using createOTP method
     const otp = user.createOTP();
 
-    const message: string = `Use this code to verify your account`;
+    const message = `Use this code to verify your account`;
     // send OTP to user's email
     sendOTP(user.user_name, email, message, otp, link);
 
@@ -489,21 +493,21 @@ export const resendOTP = catchController(
     return res.status(StatusCodes.OK).json({
       data: {
         status: StatusCodes.OK,
-        message: "New OTP has been sent to your email",
+        message: 'New OTP has been sent to your email',
       },
     });
   }
 );
 
 export const forgotPassword = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const email: string = req.body.email;
     const link: string = req.body.link;
     if (!email || !link) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
@@ -517,14 +521,14 @@ export const forgotPassword = catchController(
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {
           status: StatusCodes.NOT_FOUND,
-          message: "User with this email does not exist",
+          message: userNotFoundMessage,
         },
       });
     }
     // Create OTP using createOTP method
     const otp = user.createOTP();
 
-    const message: string = `Click the button to reset your password`;
+    const message = `Click the button to reset your password`;
 
     await user.save();
     // send OTP to user's email
@@ -541,14 +545,14 @@ export const forgotPassword = catchController(
     return res.status(StatusCodes.OK).json({
       data: {
         status: StatusCodes.OK,
-        message: "Your password reset details has been sent to your email",
+        message: 'Your password reset details has been sent to your email',
       },
     });
   }
 );
 
 export const resetPassword = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const email: string = req.body.email;
     const otp: string = req.body.otp;
     const password: string = req.body.password;
@@ -556,7 +560,7 @@ export const resetPassword = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
@@ -569,7 +573,7 @@ export const resetPassword = catchController(
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({
         status: StatusCodes.NOT_FOUND,
-        message: "User with this email does not exist",
+        message: userNotFoundMessage,
       });
     }
 
@@ -577,14 +581,13 @@ export const resetPassword = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message:
-            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+          message: passwordRegexMessage,
         },
       });
     }
 
     // verify OTP
-    const isValid = user.validateOTP(otp, user.otpToken, "passwordReset");
+    const isValid = user.validateOTP(otp, user.otpToken, 'passwordReset');
     // update user's verified field to true
     if (isValid) {
       user.password = password;
@@ -592,13 +595,13 @@ export const resetPassword = catchController(
       res.status(StatusCodes.OK).json({
         data: {
           status: StatusCodes.OK,
-          message: "Your password has been reset",
+          message: 'Your password has been reset',
         },
       });
       await sendPasswordChanged(
         user.user_name,
         email,
-        "Enjoy the App anonymous one!"
+        'Enjoy the App anonymous one!'
       );
       return;
     }
@@ -606,21 +609,21 @@ export const resetPassword = catchController(
     return res.status(StatusCodes.BAD_REQUEST).json({
       data: {
         status: StatusCodes.BAD_REQUEST,
-        message: "OTP is incorrect",
+        message: 'OTP is incorrect',
       },
     });
   }
 );
 
 export const updatePassword = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user_id: string = req.user._id;
     const password: string = req.body.password;
     if (!user_id || !password) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message: "Please make sure you pass all the required fields",
+          message: passRequredFieldsMessage,
         },
       });
     }
@@ -634,7 +637,7 @@ export const updatePassword = catchController(
       return res.status(StatusCodes.NOT_FOUND).json({
         data: {
           status: StatusCodes.NOT_FOUND,
-          message: "User with this user_id does not exist",
+          message: 'User with this user_id does not exist',
         },
       });
     }
@@ -643,8 +646,7 @@ export const updatePassword = catchController(
       return res.status(StatusCodes.BAD_REQUEST).json({
         data: {
           status: StatusCodes.BAD_REQUEST,
-          message:
-            "Password must be at least 8 characters long and contain a number, a lowercase letter and an uppercase letter",
+          message: passwordRegexMessage,
         },
       });
     }
@@ -655,40 +657,39 @@ export const updatePassword = catchController(
     res.status(StatusCodes.OK).json({
       data: {
         status: StatusCodes.OK,
-        message: "Your password has been updated",
+        message: 'Your password has been updated',
       },
     });
     await sendPasswordChanged(
       user.user_name,
       user.email,
-      "Enjoy the App anonymous one!"
+      'Enjoy the App anonymous one!'
     );
-    return;
   }
 );
 
 export const getAccessToken = catchController(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const { refreshToken }: { refreshToken: string | undefined } = req.body;
-    if (!refreshToken) return resp.setError(400, "token is missing").send(res);
+    if (!refreshToken) return resp.setError(400, 'token is missing').send(res);
 
     const decoded = <{ id: string; type: string }>(
       jwt.verify(refreshToken, process.env.JWT_SECRET_KEY as string)
     );
 
-    if (decoded.type && decoded.type !== "string") {
+    if (decoded.type && decoded.type !== 'string') {
       return resp
-        .setError(400, "invalid token provided. please provide a refresh token")
+        .setError(400, 'invalid token provided. please provide a refresh token')
         .send(res);
     }
 
     const user = await User.findOne({ _id: decoded.id });
 
-    if (!user) return resp.setError(400, "invalid refresh token").send(res);
+    if (!user) return resp.setError(400, 'invalid refresh token').send(res);
     const { token: refresh_token, token_expires: refresh_token_expires } =
-      generateToken(user._id, "refresh");
+      generateToken(user._id, 'refresh');
     const { token: access_token, token_expires: access_token_expires } =
-      generateToken(user.id, "access");
+      generateToken(user.id, 'access');
 
     return resp
       .setSuccess(
@@ -699,7 +700,7 @@ export const getAccessToken = catchController(
           refresh_token_expires,
           access_token_expires,
         },
-        "access token generated successfully"
+        'access token generated successfully'
       )
       .send(res);
   }

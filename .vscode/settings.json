@@ -18,5 +18,12 @@
     "titleBar.inactiveBackground": "#b8860b99",
     "titleBar.inactiveForeground": "#15202b99"
   },
-  "peacock.color": "#b8860b"
+  "peacock.color": "#b8860b",
+  "css.validate": false,
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "headwind.runOnSave": false
 }

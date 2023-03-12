@@ -1,2 +1,2 @@
-declare module "helmet";
-declare module "xss-clean";
+declare module 'helmet';
+declare module 'xss-clean';

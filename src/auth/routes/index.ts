@@ -1,6 +1,5 @@
-import { Router } from "express";
-import passport from "passport";
-import verifyToken from "../../utils/verifyToken";
+import { Router } from 'express';
+
 import {
   createUser,
   createUserGoogle,
@@ -11,26 +10,27 @@ import {
   resetPassword,
   updatePassword,
   verifyEmail,
-} from "../controllers";
+} from '../controllers';
+import verifyToken from '../../utils/verifyToken';
 
 const router = Router();
 
-router.route("/").post(login);
+router.route('/').post(login);
 
-router.route("/signup").post(createUser);
+router.route('/signup').post(createUser);
 
-router.route("/verify").post(verifyEmail);
+router.route('/verify').post(verifyEmail);
 
-router.route("/refresh-token").post(getAccessToken);
+router.route('/refresh-token').post(getAccessToken);
 
-router.route("/resend-otp").post(resendOTP);
+router.route('/resend-otp').post(resendOTP);
 
-router.route("/forgot-password").post(forgotPassword);
+router.route('/forgot-password').post(forgotPassword);
 
-router.route("/reset-password").post(resetPassword);
+router.route('/reset-password').post(resetPassword);
 
-router.route("/update-password").post(verifyToken, updatePassword);
+router.route('/update-password').post(verifyToken, updatePassword);
 
-router.route("/google").post(createUserGoogle);
+router.route('/google').post(createUserGoogle);
 
 export default router;

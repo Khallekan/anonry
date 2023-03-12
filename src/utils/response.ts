@@ -1,12 +1,11 @@
-import { ResponseData } from "../common/types";
-import { Response } from "express";
+import { Response } from 'express';
 
 class ResponseStatus {
   statusCode: number | null;
 
   success: boolean | null;
 
-  data: ResponseData | null;
+  data: unknown | null;
 
   message: string | null;
 
@@ -19,7 +18,7 @@ class ResponseStatus {
 
   setSuccess(
     statusCode: number,
-    data: ResponseData | null,
+    data: unknown | null,
     message: string | null
   ): this {
     this.statusCode = statusCode;
@@ -38,7 +37,7 @@ class ResponseStatus {
 
   send(res: Response): Response {
     const result: {
-      data: ResponseData | null;
+      data: unknown | null;
       status: number | null;
       message?: string;
     } = {

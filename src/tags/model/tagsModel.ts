@@ -1,5 +1,6 @@
-import { Schema, model } from "mongoose";
-import { ITags } from "../../common/types";
+import { model, Schema } from 'mongoose';
+
+import { ITags } from '../../common/types';
 
 const TagsModel = new Schema<ITags>(
   {
@@ -14,4 +15,4 @@ const TagsModel = new Schema<ITags>(
   { timestamps: true }
 );
 
-export default model<ITags>("tags", TagsModel);
+export default model<ITags>('tags', TagsModel);

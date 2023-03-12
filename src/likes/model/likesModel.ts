@@ -1,20 +1,21 @@
-import { Schema, model } from "mongoose";
-import { ILikesModel } from "../../common/types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
+import { model, Schema } from 'mongoose';
+
+import { ILikesModel } from '../../common/types';
 
 const likesModel = new Schema<ILikesModel>(
   {
     entry: {
       type: ObjectId,
-      ref: "entries",
+      ref: 'entries',
     },
     owner: {
       type: ObjectId,
-      ref: "user",
+      ref: 'user',
     },
     liked_by: {
       type: ObjectId,
-      ref: "user",
+      ref: 'user',
     },
     entry_deleted: {
       type: Boolean,
@@ -32,12 +33,12 @@ likesModel.pre(/^find/, function (next) {
   // select only the avatar user_name and _id when populating
 
   this.populate(
-    "entry",
-    "+title +description +tags +no_of_likes -user -liked_by -no_of_comments -__v"
+    'entry',
+    '+title +description +tags +no_of_likes -user -liked_by -no_of_comments -__v'
   );
-  this.populate("liked_by", "avatar user_name");
-  this.populate("owner", "avatar user_name");
+  this.populate('liked_by', 'avatar user_name');
+  this.populate('owner', 'avatar user_name');
   next();
 });
 
-export default model<ILikesModel>("likes", likesModel);
+export default model<ILikesModel>('likes', likesModel);

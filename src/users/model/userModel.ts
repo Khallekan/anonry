@@ -1,8 +1,9 @@
-import { hash, compare } from "bcryptjs";
-import { createHash } from "crypto";
-import { Schema, model } from "mongoose";
-import isEmail from "validator/lib/isEmail";
-import { IUser } from "../../common/types";
+import { compare, hash } from 'bcryptjs';
+import { createHash } from 'crypto';
+import { model, Schema } from 'mongoose';
+import isEmail from 'validator/lib/isEmail';
+
+import { IUser } from '../../common/types';
 
 const userSchema = new Schema<IUser>(
   {
@@ -23,8 +24,8 @@ const userSchema = new Schema<IUser>(
       unique: true,
       sparse: true,
       lowercase: true,
-      validate: [isEmail, "Please specfy a valid email."],
-      required: [true, "Please provide a valid email"],
+      validate: [isEmail, 'Please specfy a valid email.'],
+      required: [true, 'Please provide a valid email'],
     },
     password: {
       type: String,
@@ -43,25 +44,25 @@ const userSchema = new Schema<IUser>(
       // check if username has spaces
       validate: {
         validator: function (v: string) {
-          return !v.includes(" ");
+          return !v.includes(' ');
         },
-        message: "Username cannot contain spaces and must be unique",
+        message: 'Username cannot contain spaces and must be unique',
       },
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ['user', 'admin'],
       select: false,
     },
     avatar: {
       type: String,
-      required: [true, "Please provide a avatar"],
+      required: [true, 'Please provide a avatar'],
       // check if string starts with https://robohash.org/
       validate: {
         validator: (value: string) => {
-          return value.startsWith("https://robohash.org/");
+          return value.startsWith('https://robohash.org/');
         },
-        message: "Please provide a valid avatar",
+        message: 'Please provide a valid avatar',
       },
     },
     verified: {
@@ -75,8 +76,8 @@ const userSchema = new Schema<IUser>(
       //suspended is when admn deactivates temporarily a user's account for any flouting of rules
       //deteled is when the user deactivates their account personally and they can reactivate it back to unverified thereby needing to verify email again
       //takenDown is when admin permanently deactivates a user's account
-      enum: ["verified", "unverified", "suspended", "deleted", "takenDown"],
-      default: "unverified",
+      enum: ['verified', 'unverified', 'suspended', 'deleted', 'takenDown'],
+      default: 'unverified',
       select: false,
     },
     otpToken: {
@@ -156,21 +157,21 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.methods.createOTP = function () {
-  var digits = "0123456789";
-  let OTP = "";
+  const digits = '0123456789';
+  let OTP = '';
   for (let i = 0; i < 4; i++) {
     OTP += digits[Math.floor(Math.random() * 10)];
   }
 
-  this.otpToken = createHash("sha256").update(OTP).digest("hex");
+  this.otpToken = createHash('sha256').update(OTP).digest('hex');
   this.otpExpires = Date.now() + 10 * 60 * 1000;
 
   return OTP;
 };
 
-userSchema.pre("save", async function (next) {
+userSchema.pre('save', async function (next) {
   // first use mongoose internal boolean function isModified to check if password field has been modified or not if it has not been modified then we do not need to hash, if it has then we hash
-  if (!this.isModified("password")) return next();
+  if (!this.isModified('password')) return next();
 
   // use bcrypt for hasing
   // bcrypt salts each password meaning it adds a random string to a passwrd before hashing so that even 2 equal passwords dont generate the same hash
@@ -183,12 +184,12 @@ userSchema.pre("save", async function (next) {
 });
 
 //use middleware
-userSchema.pre("save", function (next) {
+userSchema.pre('save', function (next) {
   // if password wasnt changed or document is new exit this middlware
-  if (this.isModified("status")) {
-    this.verified = this.status === "verified";
+  if (this.isModified('status')) {
+    this.verified = this.status === 'verified';
   }
-  if (!this.isModified("password") || this.isNew) return next();
+  if (!this.isModified('password') || this.isNew) return next();
 
   next();
 });
@@ -199,11 +200,11 @@ userSchema.methods.validateOTP = function (
   type: string
 ) {
   //compare function returns true or false that can be accessed in any file where the buyerSchema has been imported
-  if (createHash("sha256").update(candidateToken).digest("hex") === token) {
+  if (createHash('sha256').update(candidateToken).digest('hex') === token) {
     this.otpToken = undefined;
     this.otpExpires = undefined;
-    if (type === "accountVerify") {
-      this.status = "verified";
+    if (type === 'accountVerify') {
+      this.status = 'verified';
       this.verified = true;
     }
     return true;
@@ -218,4 +219,4 @@ userSchema.methods.validatePassword = async function (
   return await compare(candidatePassword, this.password);
 };
 
-export default model<IUser>("user", userSchema);
+export default model<IUser>('user', userSchema);

@@ -11,5 +11,3 @@
 .env.production
 .env.staging
 /yarn-error.log
-
-/__tests__

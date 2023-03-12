@@ -1,5 +1,4 @@
-import { Router } from "express";
-import verifyToken from "../../utils/verifyToken";
+import { Router } from 'express';
 
 import {
   createEntry,
@@ -8,18 +7,19 @@ import {
   getMyEntries,
   getSingleEntry,
   publishEntry,
-} from "../controllers";
+} from '../controllers';
+import verifyToken from '../../utils/verifyToken';
 
 const router = Router();
 
 router
-  .route("/")
+  .route('/')
   .get(verifyToken, getMyEntries)
   .post(verifyToken, createEntry)
   .patch(verifyToken, editEntry);
 
 router
-  .route("/:id")
+  .route('/:id')
   .get(verifyToken, getSingleEntry)
   .delete(verifyToken, deleteEntry)
   .patch(verifyToken, publishEntry);

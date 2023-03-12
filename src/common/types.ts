@@ -1,11 +1,4 @@
-import { Document, Model, Schema } from "mongoose";
-import { Request as REQUEST } from "express";
-
-// Interface for general request object
-
-export interface Request extends REQUEST {
-  user: IUser;
-}
+import { Document, Model, PopulatedDoc } from 'mongoose';
 
 // User Interface
 export interface IUser extends Document {
@@ -72,9 +65,9 @@ export interface IEntry extends Document {
 export interface ITask extends Document {
   title: string;
   description: string;
-  status: "pending" | "active" | "completed";
+  status: 'pending' | 'active' | 'completed';
   due_date: Date;
-  user: IUser;
+  user: PopulatedDoc<IUser>;
   deleted: boolean;
   permanently_deleted: false;
   createdAt: Date;
@@ -84,15 +77,15 @@ export interface ITask extends Document {
 }
 
 // Bookmark Interface
-export interface IBookmark extends Document {
-  bookmarked_by: IUser;
-  entry: IEntry;
-  published_by: IUser;
-  tags: ITags[];
+export interface IBookmark {
+  bookmarked_by: PopulatedDoc<IUser>;
+  entry: PopulatedDoc<IEntry>;
+  published_by: PopulatedDoc<IUser>;
+  tags: PopulatedDoc<ITags>[];
 }
 
 export interface IUserModel extends Model<IUser> {
-  createOTP(): any;
+  createOTP(): void;
 }
 
 // Tag interface
@@ -113,12 +106,12 @@ export interface ILikesModel extends Document {
 export interface ITrash extends Document {
   entry?: IEntry;
   task?: ITask;
-  type: "entry" | "task";
+  type: 'entry' | 'task';
   user?: IUser;
   expiry_date: Date;
 }
 
-export type ResponseData = Record<string, any> | Record<string, any>[];
+// export type ResponseData = Record<string, any> | Record<string, any>[];
 
 // Page Info Interface
 export interface IPageInfo {
@@ -131,5 +124,17 @@ export interface IPageInfo {
   previous?: {
     page: number;
     limit: number;
+  };
+}
+
+export interface IPageData {
+  page: number;
+  totalPages: number;
+  totalHits: number;
+  next?: {
+    page: number;
+  };
+  previous?: {
+    page: number;
   };
 }

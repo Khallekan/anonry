@@ -1,39 +1,40 @@
-import express, { Express, Request, Response } from "express";
-import logger from "morgan";
-import helmet from "helmet";
-import { globalErrorHandle } from "./errorService/controllers/errorController";
-import AppError from "./errorService/utils/AppErrorModule";
-import ExpressMongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import mainRoutes from "./main-routes";
-import path from "path";
-import { StatusCodes } from "http-status-codes";
+import cookieParser from 'cookie-parser';
 // import passport from "passport";
-import cookieSession from "cookie-session";
-import serveFavicon from "serve-favicon";
+import cookieSession from 'cookie-session';
+import cors from 'cors';
+import express, { Express, Request, Response } from 'express';
+import ExpressMongoSanitize from 'express-mongo-sanitize';
+import helmet from 'helmet';
+import { StatusCodes } from 'http-status-codes';
+import logger from 'morgan';
+import path from 'path';
+import serveFavicon from 'serve-favicon';
+import xss from 'xss-clean';
+
+import { globalErrorHandle } from './errorService/controllers/errorController';
+import AppError from './errorService/utils/AppErrorModule';
+import mainRoutes from './main-routes';
 
 const app: Express = express();
 app.use(cors());
 
-app.use(logger("dev"));
+app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.enable("trust proxy");
-app.set("view engine", "pug");
+app.enable('trust proxy');
+app.set('view engine', 'pug');
 
-app.options("*", (cors as any)());
+app.options('*', cors());
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(StatusCodes.OK).send("Welcome to Anonry");
+app.get('/', (req: Request, res: Response) => {
+  res.status(StatusCodes.OK).send('Welcome to Anonry');
 });
 
-app.use("/", mainRoutes);
+app.use('/', mainRoutes);
 
-app.use(serveFavicon(path.join(__dirname, "../public", "favicon.png")));
-app.set("views", path.join(__dirname, "../emailViews"));
+app.use(serveFavicon(path.join(__dirname, '../public', 'favicon.png')));
+app.set('views', path.join(__dirname, '../emailViews'));
 
 app.use(helmet());
 
@@ -51,7 +52,7 @@ app.use(
 // app.use(passport.initialize());
 // app.use(passport.session());
 
-app.all("*", (req, res, next) => {
+app.all('*', (req, res, next) => {
   // we create an error by initializing the Error class object
 
   //whenever we pass an argument into next() express always sees it as an error message, it will then skip all the other middlware/functions to be executed and pass the error to the global error handler making that error acessible to our default express error middleware
@@ -64,6 +65,8 @@ app.all("*", (req, res, next) => {
   );
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 app.use(globalErrorHandle);
 
 export default app;

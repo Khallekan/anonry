@@ -1,8 +1,9 @@
-import { Router } from "express";
-import verifyToken from "../../utils/verifyToken";
-import { getTimeline } from "../controller";
+import { Router } from 'express';
+
+import { getTimeline } from '../controller';
+import verifyToken from '../../utils/verifyToken';
 const router = Router();
 
-router.get("/", verifyToken, getTimeline);
+router.get('/', verifyToken, getTimeline);
 
 export default router;
