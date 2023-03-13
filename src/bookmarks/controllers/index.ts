@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Bookmark from '../model/bookmarkModel';
 import Entry from '../../entries/model/entriesModel';
@@ -12,7 +13,7 @@ const resp = new ResponseStatus();
 
 export const createBookmark = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const entry_id: string | undefined = req.body.entry_id;
 
     if (!entry_id) {
@@ -70,7 +71,7 @@ export const createBookmark = catchController(
 
 export const getBookmarks = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
 
     if (!user_id) {
       return resp
@@ -111,7 +112,7 @@ export const getBookmarks = catchController(
     // const startIndex = (page - 1) * limit;
     const searchBy: {
       tags?: { $in: string[] };
-      bookmarked_by: string;
+      bookmarked_by: Types.ObjectId;
     } = {
       bookmarked_by: user_id,
     };
@@ -168,7 +169,7 @@ export const getBookmarks = catchController(
 
 export const removeBookmark = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const bookmark_id: string | undefined = req.params.id;
 
     if (!bookmark_id) {

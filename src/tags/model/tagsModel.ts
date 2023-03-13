@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 
 import { ITags } from '../../common/types';
 
@@ -15,4 +15,9 @@ const TagsModel = new Schema<ITags>(
   { timestamps: true }
 );
 
-export default model<ITags>('tags', TagsModel);
+interface TagsMethods {}
+
+export default model<
+  ITags,
+  mongoose.PaginateModel<ITags, Record<string, string>, TagsMethods>
+>('tags', TagsModel);

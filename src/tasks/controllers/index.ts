@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Task from '../model/taskModel';
 import catchController from '../../utils/catchControllerAsyncs';
@@ -9,7 +10,7 @@ const resp = new ResponseStatus();
 
 export const createTask = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const {
       title,
       description,
@@ -56,7 +57,7 @@ export const createTask = catchController(
       description: string;
       title?: string;
       due_date?: string;
-      user: string;
+      user: Types.ObjectId;
       tags?: string[];
     }
 

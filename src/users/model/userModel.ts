@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcryptjs';
 import { createHash } from 'crypto';
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 import isEmail from 'validator/lib/isEmail';
 
 import { IUser } from '../../common/types';
@@ -219,4 +219,16 @@ userSchema.methods.validatePassword = async function (
   return await compare(candidatePassword, this.password);
 };
 
-export default model<IUser>('user', userSchema);
+interface UserMethods {
+  createOTP(): string;
+  validateOTP(candidateToken: string, token: string, type: string): boolean;
+  validatePassword(candidatePassword: string): boolean;
+  toObject(): IUser;
+}
+
+userSchema.set('toObject', { getters: true });
+
+export default model<
+  IUser,
+  mongoose.PaginateModel<IUser, Record<string, string>, UserMethods>
+>('user', userSchema);

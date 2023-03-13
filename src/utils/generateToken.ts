@@ -1,7 +1,8 @@
-import jwt, { decode, JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Types } from 'mongoose';
 
 const generateToken = function (
-  userId: string,
+  userId: string | Types.ObjectId,
   type: 'access' | 'refresh'
 ): { token: string; token_expires: number } {
   const token = jwt.sign(
@@ -12,7 +13,9 @@ const generateToken = function (
     }
   );
 
-  const tokens: JwtPayload | string | null = decode(token);
+  console.log({ token });
+
+  const tokens: JwtPayload | string | null = jwt.decode(token);
   let token_expires = 0;
   if (tokens && typeof tokens !== 'string') {
     const { exp } = tokens;

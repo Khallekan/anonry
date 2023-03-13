@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 import { IEntry, ILikesModel } from '../../common/types';
 import Entry from '../../entries/model/entriesModel';
@@ -13,12 +13,8 @@ import ResponseStatus from '../../utils/response';
 const resp = new ResponseStatus();
 
 const checkIfLiked = (
-  likes: (ILikesModel & {
-    _id: Types.ObjectId;
-  })[],
-  entries: (IEntry & {
-    _id: Types.ObjectId;
-  })[]
+  likes: HydratedDocument<ILikesModel>[],
+  entries: HydratedDocument<IEntry>[]
 ) => {
   likes.forEach((like) => {
     const entry = entries.find(
@@ -34,7 +30,7 @@ const checkIfLiked = (
 
 export const getTimeline = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     let tags: string[];
 
     // If page and limit are of invalid types return error
@@ -72,7 +68,7 @@ export const getTimeline = catchController(
     interface ISearchBy {
       deleted: boolean;
       published: boolean;
-      tags?: { $in: string[] };
+      tags?: { $in: Types.ObjectId[] };
     }
 
     // define parameters to search by
@@ -95,7 +91,7 @@ export const getTimeline = catchController(
 
     const totalDocuments = await Entry.countDocuments(searchBy);
 
-    let entries = await Entry.find(searchBy)
+    let entries: HydratedDocument<IEntry>[] = await Entry.find(searchBy)
       .limit(limit)
       .skip(startIndex)
       .sort(sort)

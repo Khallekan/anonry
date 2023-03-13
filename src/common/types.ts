@@ -1,8 +1,8 @@
-import { Document, Model, PopulatedDoc } from 'mongoose';
+import { Document, Model, PopulatedDoc, Types } from 'mongoose';
 
 // User Interface
-export interface IUser extends Document {
-  _id: string;
+export interface IUser {
+  _id: Types.ObjectId;
   google: {
     id: string;
     email: string;
@@ -38,13 +38,11 @@ export interface IUser extends Document {
   updatedAt: Date;
   entries: IEntry[];
   createdAt: Date;
-  createOTP(): string;
-  validateOTP(candidateToken: string, token: string, type: string): boolean;
-  validatePassword(candidatePassword: string): boolean;
+  toObject: () => IUser;
 }
 
 // Entry Interface
-export interface IEntry extends Document {
+export interface IEntry {
   title: string;
   description: string;
   tags?: ITags[];
@@ -59,10 +57,11 @@ export interface IEntry extends Document {
   createdAt: Date;
   updatedAt: Date;
   isLiked?: boolean;
+  _id: Types.ObjectId;
 }
 
 // Task Interface
-export interface ITask extends Document {
+export interface ITask {
   title: string;
   description: string;
   status: 'pending' | 'active' | 'completed';
@@ -89,12 +88,12 @@ export interface IUserModel extends Model<IUser> {
 }
 
 // Tag interface
-export interface ITags extends Document {
+export interface ITags {
   name: string;
 }
 
 // Likes interface
-export interface ILikesModel extends Document {
+export interface ILikesModel {
   liked_by: IUser;
   owner: IUser;
   entry: IEntry;

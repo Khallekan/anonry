@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Likes from '../model/likesModel';
 import Entry from '../../entries/model/entriesModel';
@@ -128,7 +129,7 @@ export const getLikesPerUser = catchController(
   async (req: Request, res: Response) => {
     const user_name: string | undefined = req.params.user_id;
     console.log('HIT');
-    let user_id: string;
+    let user_id: Types.ObjectId;
     if (user_name) {
       const user = await User.findOne({ user_name });
       if (!user) {
@@ -162,7 +163,7 @@ export const getLikesPerUser = catchController(
     const startIndex = (page - 1) * limit;
 
     interface ISearchObj {
-      liked_by: string;
+      liked_by: Types.ObjectId;
       entry_deleted: { $in: (boolean | undefined | null)[] };
       entry_unpublished: { $in: (boolean | undefined | null)[] };
     }

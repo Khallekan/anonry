@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Trash from '../model/trashModel';
 import trashScheduler from '../utils/trash-cron';
@@ -15,7 +16,7 @@ export const trashCron = trashScheduler();
 const resp = new ResponseStatus();
 
 export const getTrash = catchController(async (req: Request, res: Response) => {
-  const user_id: string = req.user._id;
+  const user_id: Types.ObjectId = req.user._id;
   let type: 'entry' | 'task' | undefined;
 
   // If page and limit are of invalid types return error
@@ -56,7 +57,7 @@ export const getTrash = catchController(async (req: Request, res: Response) => {
 
   // define the type of the search object
   interface ISearchBy {
-    user: string;
+    user: Types.ObjectId;
     type?: 'entry' | 'task';
   }
 
