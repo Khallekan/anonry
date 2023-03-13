@@ -1,20 +1,19 @@
-import { ObjectId } from 'mongodb';
-import mongoose, { model, Schema } from 'mongoose';
+import mongoose, { model, Schema, Types } from 'mongoose';
 
 import { ILikesModel } from '../../common/types';
 
 const likesModel = new Schema<ILikesModel>(
   {
     entry: {
-      type: ObjectId,
+      type: Types.ObjectId,
       ref: 'entries',
     },
     owner: {
-      type: ObjectId,
+      type: Types.ObjectId,
       ref: 'user',
     },
     liked_by: {
-      type: ObjectId,
+      type: Types.ObjectId,
       ref: 'user',
     },
     entry_deleted: {

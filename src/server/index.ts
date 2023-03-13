@@ -12,8 +12,10 @@ const DB =
     `${process.env.DATABASE_PASSWORD}`
   ) ?? '';
 
-mongoose.connect(DB).then(() => {
-  console.log('DB connection successful');
+const mongooseConnect = mongoose.connect(DB);
+
+mongooseConnect.then(() => {
+  console.log('DB CONNECTED');
 });
 const starq = http.createServer(app);
 const port = Number(`${process.env.PORT}`) || 7100;

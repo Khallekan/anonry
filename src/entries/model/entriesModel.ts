@@ -20,10 +20,12 @@ const entrySchema = new Schema<IEntry>(
       maxlength: [1000, 'Description must be less than 500 characters'],
     },
     tags: {
-      type: Types.Array<{
-        type: Types.ObjectId;
-        ref: 'tags';
-      }>,
+      type: [
+        {
+          type: Types.ObjectId,
+          ref: 'tags',
+        },
+      ],
       default: [],
     },
     user: {
@@ -41,7 +43,7 @@ const entrySchema = new Schema<IEntry>(
       default: false,
     },
     liked_by: {
-      type: Types.Array<{ type: Types.ObjectId; ref: 'user' }>,
+      type: [{ type: Types.ObjectId, ref: 'user' }],
       select: false,
     },
     no_of_comments: {

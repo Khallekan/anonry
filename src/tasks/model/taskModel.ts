@@ -46,7 +46,7 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
-    tags: [TaskTagSchema],
+    tags: Types.DocumentArray<typeof TaskTagSchema>,
   },
   { timestamps: true, validateBeforeSave: true }
 );
