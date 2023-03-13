@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 
 import { ITrash } from '../../common/types';
 
@@ -41,4 +41,9 @@ trashModel.pre(/^find/, function (next) {
   next();
 });
 
-export default model<ITrash>('trash', trashModel);
+interface TrashMethods {}
+
+export default model<
+  ITrash,
+  mongoose.PaginateModel<ITrash, Record<string, string>, TrashMethods>
+>('trash', trashModel);

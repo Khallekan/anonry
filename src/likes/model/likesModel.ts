@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 
 import { ILikesModel } from '../../common/types';
 
@@ -41,4 +41,9 @@ likesModel.pre(/^find/, function (next) {
   next();
 });
 
-export default model<ILikesModel>('likes', likesModel);
+interface LikesMethods {}
+
+export default model<
+  ILikesModel,
+  mongoose.PaginateModel<ILikesModel, Record<string, string>, LikesMethods>
+>('likes', likesModel);

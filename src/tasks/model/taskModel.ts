@@ -1,4 +1,5 @@
-import { model, Schema, Types } from 'mongoose';
+import mongoose, { model, Schema, Types } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
 
 import { ITask } from '../../common/types';
 
@@ -50,4 +51,11 @@ const TaskSchema = new Schema<ITask>(
   { timestamps: true, validateBeforeSave: true }
 );
 
-export default model<ITask>('tasks', TaskSchema);
+TaskSchema.plugin(paginate);
+
+interface TasksMethods {}
+
+export default model<
+  ITask,
+  mongoose.PaginateModel<ITask, Record<string, string>, TasksMethods>
+>('tasks', TaskSchema);

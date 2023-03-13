@@ -8,7 +8,7 @@ import ResponseStatus from '../../utils/response';
 const resp = new ResponseStatus();
 
 export const getAllTags = catchController(
-  async (req: Request, res: Response) => {
+  async (_req: Request, res: Response) => {
     const tags = await Tag.find().sort('name');
     return resp
       .setSuccess(StatusCodes.OK, tags, 'Tags fetched successfully')

@@ -1,7 +1,8 @@
 import jwt, { decode, JwtPayload } from 'jsonwebtoken';
+import { Types } from 'mongoose';
 
 const generateToken = function (
-  userId: string,
+  userId: string | Types.ObjectId,
   type: 'access' | 'refresh'
 ): { token: string; token_expires: number } {
   const token = jwt.sign(

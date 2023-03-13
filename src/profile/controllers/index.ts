@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import { IUser } from '../../common/types';
 import Entry from '../../entries/model/entriesModel';
@@ -11,7 +12,7 @@ const resp = new ResponseStatus();
 
 export const getUserProfile = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
 
     let user: IUser | null = await User.findById(user_id).select('-__v');
 

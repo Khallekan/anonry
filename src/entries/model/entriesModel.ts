@@ -1,7 +1,8 @@
-import { ObjectId } from 'mongodb';
-import { model, Schema, Types } from 'mongoose';
+import mongoose, { model, Schema, Types } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
 
 import { IEntry } from '../../common/types';
+
 // create mongoose schema to store blog post
 const entrySchema = new Schema<IEntry>(
   {
@@ -19,12 +20,10 @@ const entrySchema = new Schema<IEntry>(
       maxlength: [1000, 'Description must be less than 500 characters'],
     },
     tags: {
-      type: [
-        {
-          type: ObjectId,
-          ref: 'tags',
-        },
-      ],
+      type: Types.Array<{
+        type: Types.ObjectId;
+        ref: 'tags';
+      }>,
       default: [],
     },
     user: {
@@ -42,7 +41,7 @@ const entrySchema = new Schema<IEntry>(
       default: false,
     },
     liked_by: {
-      type: [{ type: ObjectId, ref: 'user' }],
+      type: Types.Array<{ type: Types.ObjectId; ref: 'user' }>,
       select: false,
     },
     no_of_comments: {
@@ -79,4 +78,11 @@ entrySchema.pre(/^find/, function (next) {
   next();
 });
 
-export default model<IEntry>('entries', entrySchema);
+entrySchema.plugin(paginate);
+
+interface EntryMethods {}
+
+export default model<
+  IEntry,
+  mongoose.PaginateModel<IEntry, Record<string, string>, EntryMethods>
+>('entries', entrySchema);

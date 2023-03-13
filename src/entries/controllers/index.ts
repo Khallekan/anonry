@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Entry from '../model/entriesModel';
 import Likes from '../../likes/model/likesModel';
@@ -16,7 +17,7 @@ const entryIdRequired = 'Entry id is required';
 const entryNotFound = 'Entry not found';
 
 interface ISearchObject {
-  user: string;
+  user: Types.ObjectId;
   deleted: { $in: (false | undefined | null)[] };
   permanently_deleted: { $in: (false | undefined | null)[] };
   published?: { $in: (boolean | undefined | null)[] };
@@ -44,7 +45,7 @@ const createSearchObject = (
 
 export const getMyEntries = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
 
     if (req.query.page && typeof req.query.page != 'string') {
       return resp
@@ -152,7 +153,7 @@ export const getSingleEntry = catchController(
 
 export const createEntry = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string | undefined = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
 
     const {
       title,
@@ -171,7 +172,7 @@ export const createEntry = catchController(
     }
 
     interface IEntryDetails {
-      user: string;
+      user: Types.ObjectId;
       title: string;
       description: string;
       tags?: string[];
@@ -217,7 +218,7 @@ export const createEntry = catchController(
 
 export const editEntry = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user.id;
+    const user_id: Types.ObjectId = req.user._id;
     const entry_id: string = req.body.entry_id;
     const title: string = req.body.title;
     const description: string = req.body.description;
@@ -249,7 +250,7 @@ export const editEntry = catchController(
 
 export const deleteEntry = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const entry_id: string | undefined = req.params.id;
     const date = new Date();
     date.setDate(date.getDate() + 30);
@@ -331,7 +332,7 @@ export const deleteEntry = catchController(
 const publishEntryCase = async (
   res: Response,
   entry_id: string,
-  user_id: string
+  user_id: Types.ObjectId
 ) => {
   const entry = await Entry.findOne({
     _id: entry_id,
@@ -384,7 +385,7 @@ const publishEntryCase = async (
 const unPublishEntryCase = async (
   res: Response,
   entry_id: string,
-  user_id: string
+  user_id: Types.ObjectId
 ) => {
   const entry = await Entry.findOne({
     _id: entry_id,
@@ -427,7 +428,7 @@ const unPublishEntryCase = async (
 
 export const publishEntry = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const entry_id: string | undefined = req.params.id;
     const action: string | undefined = req.body.action;
     const validActions = ['publish', 'unpublish'];

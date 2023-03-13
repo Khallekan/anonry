@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
+import { Types } from 'mongoose';
 import isEmail from 'validator/lib/isEmail';
 
 import {
@@ -617,7 +618,7 @@ export const resetPassword = catchController(
 
 export const updatePassword = catchController(
   async (req: Request, res: Response) => {
-    const user_id: string = req.user._id;
+    const user_id: Types.ObjectId = req.user._id;
     const password: string = req.body.password;
     if (!user_id || !password) {
       return res.status(StatusCodes.BAD_REQUEST).json({
