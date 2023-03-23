@@ -272,6 +272,21 @@ export const createUserGoogle = catchController(
       generateToken(user._id, 'refresh');
     const { token: access_token, token_expires: access_token_expires } =
       generateToken(user._id, 'access');
+
+    // Get date with time in day/month/year 24hr clock
+    const date = new Date();
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    const second = date.getSeconds();
+    const time = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+    // get timezone
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const message = `Please be informed that your anonry account has been accessed on - ${time} ${timezone}`;
+    sendLoginEmail(user.user_name, user.email, message);
+
     return res.status(StatusCodes.OK).json({
       data: {
         status: StatusCodes.OK,
@@ -325,25 +340,22 @@ export const verifyEmail = catchController(
       const { token: access_token, token_expires: access_token_expires } =
         generateToken(user.id, 'access');
       await user.save();
-      return res
-        .status(StatusCodes.OK)
-        .json({
+      return res.status(StatusCodes.OK).json({
+        data: {
+          status: StatusCodes.OK,
+          message: 'Your email has been verified',
           data: {
-            status: StatusCodes.OK,
-            message: 'Your email has been verified',
-            data: {
-              user: {
-                user_name: user.user_name,
-                email,
-              },
-              refresh_token,
-              access_token,
-              refresh_token_expires,
-              access_token_expires,
+            user: {
+              user_name: user.user_name,
+              email,
             },
+            refresh_token,
+            access_token,
+            refresh_token_expires,
+            access_token_expires,
           },
-        })
-        .send('<div>Plantain</div>');
+        },
+      });
     }
 
     return res.status(StatusCodes.BAD_REQUEST).json({
