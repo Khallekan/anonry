@@ -5,8 +5,6 @@ import pug from 'pug';
 
 const transporter = nodemailer.createTransport({
   service: 'hotmail',
-  secure: true,
-  port: 465,
   auth: {
     user: process.env.E_U,
     pass: process.env.APP_PASS_O,
@@ -34,9 +32,9 @@ export const sendOTP = async (
       }
     );
     const mailOptions = {
-      from: `Anonry <${process.env.EMAIL_USERNAME}>`,
+      from: `Anonry <${process.env.E_U}>`,
       subject: 'Verify your email',
-      to: process.env.EMAIL_USERNAME,
+      to: email,
       html,
     };
     await transporter.sendMail(mailOptions);
@@ -64,7 +62,7 @@ export const sendPasswordResetLink = async (
       }
     );
     const mailOptions = {
-      from: `Anonry <${process.env.EMAIL_USERNAME}>`,
+      from: `Anonry <${process.env.E_U}>`,
       subject: 'Reset your password',
       to: email,
       html,
@@ -90,7 +88,7 @@ export const sendPasswordChanged = async (
       }
     );
     const mailOptions = {
-      from: `Anonry <${process.env.EMAIL_USERNAME}>`,
+      from: `Anonry <${process.env.E_U}>`,
       subject: 'Password Updated',
       to: email,
       html,
