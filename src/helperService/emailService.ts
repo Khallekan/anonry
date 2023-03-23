@@ -103,7 +103,7 @@ export const sendPasswordChanged = async (
 
 export const sendLoginEmail = async (
   user_name: string,
-  _email: string,
+  email: string,
   message: string
 ) => {
   console.log('sendLoginEmail');
@@ -117,9 +117,9 @@ export const sendLoginEmail = async (
       }
     );
     const mailOptions = {
-      from: `Anonry <${process.env.EMAIL_USERNAME}>`,
+      from: `Anonry <${process.env.E_U}>`,
       subject: 'Login Notification',
-      to: process.env.EMAIL_USERNAME,
+      to: email,
       html,
     };
 
