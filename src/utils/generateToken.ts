@@ -13,8 +13,6 @@ const generateToken = function (
     }
   );
 
-  console.log({ token });
-
   const tokens: JwtPayload | string | null = jwt.decode(token);
   let token_expires = 0;
   if (tokens && typeof tokens !== 'string') {
