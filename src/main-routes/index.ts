@@ -4,6 +4,7 @@ import bookmarkRoutes from '../bookmarks/routes';
 import entriesRoutes from '../entries/routes';
 import likesRoutes from '../likes/routes';
 import tagsRoutes from '../tags/routes';
+import tasksRoutes from '../tasks/routes';
 import timelineRoutes from '../timeline/routes';
 import trashRoutes from '../trash/routes';
 import userRoutes from '../users/routes';
@@ -23,4 +24,7 @@ router.use('/timeline', timelineRoutes);
 router.use('/likes', likesRoutes);
 
 router.use('/trash', trashRoutes);
+
+router.use('/tasks', tasksRoutes);
+
 export default router;

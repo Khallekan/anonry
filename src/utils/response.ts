@@ -45,6 +45,7 @@ class ResponseStatus {
       data: this.data,
     };
     if (this.message) result.message = this.message;
+
     if (this.success) {
       return res
         .status(this.statusCode ? this.statusCode : 200)
@@ -52,7 +53,7 @@ class ResponseStatus {
     }
 
     return res.status(this.statusCode ? this.statusCode : 500).json({
-      data: { status: this.statusCode, message: this.message, data: [] },
+      data: { status: this.statusCode, message: this.message, data: null },
     });
   }
 }

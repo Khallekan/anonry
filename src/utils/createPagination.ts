@@ -54,6 +54,7 @@ export const createPageData = (arg: {
     nextPage,
     prevPage,
   } = arg;
+
   const pageData: IPageData = {
     totalPages,
     page,

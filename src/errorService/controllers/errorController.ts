@@ -1,13 +1,19 @@
+import { ErrorRequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import AppError from '../utils/AppErrorModule';
 
-const handleCastErrorDB = (err) => {
+const handleCastErrorDB: ErrorRequestHandler = (err, _req, _res, _next) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
   return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
-const handleDuplicateFieldsDB = (err) => {
+const handleDuplicateFieldsDB: ErrorRequestHandler = (
+  err,
+  _req,
+  _res,
+  _next
+) => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
@@ -15,7 +21,12 @@ const handleDuplicateFieldsDB = (err) => {
   return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
-const handleValidationErrorDB = (err) => {
+const handleValidationErrorDB: ErrorRequestHandler = (
+  err,
+  _req,
+  _res,
+  _next
+) => {
   console.log(`This is the error ${err}`);
   console.log({ err });
 
@@ -57,7 +68,7 @@ const handleJWTExpiredError = () =>
 //   });
 // };
 
-const sendErrorProd = (err, req, res) => {
+const sendErrorProd: ErrorRequestHandler = (err, req, res, _next) => {
   // A) API
   if (req.originalUrl.startsWith('/')) {
     // A) Operational, trusted error: send message to client
@@ -103,14 +114,11 @@ const sendErrorProd = (err, req, res) => {
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const globalErrorHandle = (err: any, req: Request, res: Response) => {
+export const globalErrorHandle: ErrorRequestHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   err.status = err.status || 'error';
 
-  console.log(err.statusCode, 'statusCode');
-  console.log(err.status, 'status');
-
+  console.log({ status: err.status, statusCode: err.statusCode });
   // if (process.env.NODE_ENV === "development") {
   //   sendErrorProd(err, req, res);
   // } else if (process.env.NODE_ENV === "production") {
@@ -118,11 +126,11 @@ export const globalErrorHandle = (err: any, req: Request, res: Response) => {
   let error = { ...err };
   error.message = err.message;
   if (err.name === 'CastError') {
-    error = handleCastErrorDB(error);
+    error = handleCastErrorDB(error, req, res, next);
   } else if (err.code === 11000) {
-    error = handleDuplicateFieldsDB(error);
+    error = handleDuplicateFieldsDB(error, req, res, next);
   } else if (err.name === 'ValidationError') {
-    error = handleValidationErrorDB(error);
+    error = handleValidationErrorDB(error, req, res, next);
   } else if (err.name === 'JsonWebTokenError') {
     error = handleJWTError();
   } else if (err.name === 'TokenExpiredError') {
@@ -130,7 +138,7 @@ export const globalErrorHandle = (err: any, req: Request, res: Response) => {
     console.log('The error is', error);
   }
 
-  sendErrorProd(error, req, res);
+  sendErrorProd(error, req, res, next);
   // }
 };
 
