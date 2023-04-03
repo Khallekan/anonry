@@ -7,7 +7,7 @@ export default class AppError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    console.log(this.statusCode, this.status);
+    console.log({ statusCode: this.statusCode, status: this.status });
     //we mostly use this error class for operational errors, errors from using the api not bugs from the api code, e.g network problem
 
     this.isOperational = true;

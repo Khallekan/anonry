@@ -123,7 +123,6 @@ export const sendLoginEmail = async (
 
     // console.log({ mailOptions });
     await transporter.sendMail(mailOptions);
-    console.log('sent');
   } catch (error) {
     console.error(error);
   }

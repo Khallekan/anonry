@@ -6,8 +6,8 @@ import { ITask } from '../../common/types';
 // Create Mongoose Model to store items in a todo list
 
 const TaskTagSchema = new Schema<{ name: string; color: string }>({
-  name: { type: String },
-  color: { type: String },
+  name: { type: String, lowercase: true },
+  color: { type: String, lowercase: true },
 });
 
 const TaskSchema = new Schema<ITask>(
@@ -46,12 +46,18 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
-    tags: Types.DocumentArray<typeof TaskTagSchema>,
+    tags: [TaskTagSchema],
   },
   { timestamps: true, validateBeforeSave: true }
 );
 
 TaskSchema.plugin(paginate);
+
+// on find populate with user and entry
+TaskSchema.pre(/^find/, function (next) {
+  this.populate('user', '-__v ');
+  next();
+});
 
 interface TasksMethods {}
 

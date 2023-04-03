@@ -52,11 +52,9 @@ app.use(
 // app.use(passport.initialize());
 // app.use(passport.session());
 
-app.all('*', (req, res, next) => {
+app.all('*', (req, _res, next) => {
   // we create an error by initializing the Error class object
-
   //whenever we pass an argument into next() express always sees it as an error message, it will then skip all the other middlware/functions to be executed and pass the error to the global error handler making that error acessible to our default express error middleware
-
   next(
     new AppError(
       `Can't find ${req.originalUrl} on this server!! 😫`,
@@ -65,8 +63,6 @@ app.all('*', (req, res, next) => {
   );
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 app.use(globalErrorHandle);
 
 export default app;

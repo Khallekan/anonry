@@ -136,9 +136,7 @@ export const createUser = catchController(
 
     const message = `Use this code to verify your account`;
     // send OTP to user's email
-    const emailResponse = sendOTP(user_name, email, message, otp, link);
-
-    console.log(emailResponse);
+    sendOTP(user_name, email, message, otp, link);
 
     await user.save();
 
@@ -188,7 +186,7 @@ export const createUserGoogle = catchController(
       $and: [{ 'google.id': googleInfo.id }, { email: googleInfo.email }],
     });
 
-    console.log({ location: 'CHECKING IF USER EXISTS USING GOOGLE ID', user });
+    console.log({ location: 'CHECKING IF USER EXISTS USING GOOGLE ID' });
 
     if (!user) {
       // check if email already exists
@@ -545,15 +543,7 @@ export const forgotPassword = catchController(
 
     await user.save();
     // send OTP to user's email
-    const mailStatus = await sendPasswordResetLink(
-      user.user_name,
-      email,
-      message,
-      otp,
-      link
-    );
-
-    console.log({ mailStatus });
+    await sendPasswordResetLink(user.user_name, email, message, otp, link);
 
     return res.status(StatusCodes.OK).json({
       data: {
