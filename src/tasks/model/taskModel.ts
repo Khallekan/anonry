@@ -10,6 +10,11 @@ const TaskTagSchema = new Schema<{ name: string; color: string }>({
   color: { type: String, lowercase: true },
 });
 
+const ReminderSchema = new Schema<{ time: Date; completed: boolean }>({
+  time: Date,
+  completed: { type: Boolean, default: false },
+});
+
 const TaskSchema = new Schema<ITask>(
   {
     title: {
@@ -40,7 +45,7 @@ const TaskSchema = new Schema<ITask>(
       default: false,
       select: false,
     },
-    reminder: [{ type: Date }],
+    reminder: [ReminderSchema],
     permanently_deleted: {
       type: Boolean,
       default: false,

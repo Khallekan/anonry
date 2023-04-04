@@ -12,15 +12,17 @@ const resp = new ResponseStatus();
 const INVALID_TASK_ID = 'Invalid task id';
 const TASK_NOT_FOUND = 'Task not found';
 
-function isISODate(dateString: string): boolean {
+function isISODate(dateString: string | Date): boolean {
   const isoRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{1,3})?Z$/;
-  return isoRegExp.test(dateString);
+  return isoRegExp.test(dateString.toString());
 }
-function validateEveryReminder(reminder: string[] | undefined): boolean {
+function validateEveryReminder(
+  reminder: { time: Date | string; completed: boolean }[] | undefined
+): boolean {
   if (!Array.isArray(reminder)) {
     return false;
   }
-  return reminder.every((date) => isISODate(date));
+  return reminder.every((date) => date.time && isISODate(date.time));
 }
 
 function checkTagsValid(tags: unknown): boolean {
@@ -144,19 +146,8 @@ export const getSingleTask = catchController(
 export const createTask = catchController(
   async (req: Request, res: Response) => {
     const user_id: Types.ObjectId = req.user._id;
-    const {
-      title,
-      description,
-      due_date,
-      tags,
-      reminder,
-    }: {
-      title: string | undefined;
-      description: string | undefined;
-      due_date: string | undefined;
-      tags: { name: string; color?: string }[] | undefined;
-      reminder: string[] | undefined;
-    } = req.body;
+    const { title, description, due_date, tags, reminder }: Partial<ITask> =
+      req.body;
 
     if (!description) {
       return resp
@@ -193,7 +184,7 @@ export const createTask = catchController(
       return resp
         .setError(
           StatusCodes.BAD_REQUEST,
-          'Reminder must be an array of dates in ISO format'
+          'Reminder must be an array having the time key in ISO format'
         )
         .send(res);
     }
@@ -213,7 +204,7 @@ export const createTask = catchController(
       due_date?: string;
       user: Types.ObjectId;
       tags?: { name: string; color?: string }[];
-      reminder?: string[];
+      reminder?: { time: Date; completed: boolean }[];
     }
 
     const newTask: INewTask = {
@@ -267,14 +258,7 @@ export const updateSingleTask = catchController(
       tags,
       reminder,
       status,
-    }: {
-      title: string | undefined;
-      description: string | undefined;
-      due_date: string | undefined;
-      tags: { name: string; color?: string }[] | undefined;
-      reminder: string[] | undefined;
-      status: typeof task.status;
-    } = req.body;
+    }: Partial<ITask> = req.body;
     const updatedTask: Partial<ITask> = {};
 
     if (description && typeof description !== 'string') {
@@ -306,7 +290,7 @@ export const updateSingleTask = catchController(
       return resp
         .setError(
           StatusCodes.BAD_REQUEST,
-          'Reminder must be an array of dates in ISO format'
+          'Reminder must be an array having the time key in ISO format'
         )
         .send(res);
     }
@@ -343,9 +327,15 @@ export const updateSingleTask = catchController(
     }
 
     if (reminder && validateEveryReminder(reminder)) {
-      updatedTask.reminder = Array.from(
-        new Set([...reminder.map((date) => new Date(date))])
-      );
+      updatedTask.reminder = reminder.map((singleReminder) => {
+        const existingReminder = task.reminder.find(
+          (documentReminder) => documentReminder.time === singleReminder.time
+        );
+
+        return existingReminder
+          ? { ...existingReminder, ...singleReminder }
+          : singleReminder;
+      });
     }
 
     if (status) {
