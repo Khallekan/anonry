@@ -71,7 +71,7 @@ export interface ITask {
   permanently_deleted: false;
   createdAt: Date;
   updatedAt: Date;
-  reminder: Date[];
+  reminder: { time: Date; completed: boolean }[];
   tags: { name: string; color?: string }[];
 }
 
