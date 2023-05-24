@@ -94,7 +94,7 @@ export const createUser = catchController(
     // make sure user_name is unique
     if (email) {
       const existingUserEmail = await User.findOne({
-        email,
+        email: { $regex: email, $options: 'i' },
       });
       if (existingUserEmail) {
         return res.status(StatusCodes.CONFLICT).json({
@@ -109,8 +109,7 @@ export const createUser = catchController(
     // make email is unique
     if (req.body.user_name) {
       const existingUserName = await User.findOne({
-        $regex: user_name,
-        $options: 'i',
+        user_name: { $regex: user_name, $options: 'i' },
       });
       if (existingUserName) {
         return res.status(StatusCodes.CONFLICT).json({
@@ -129,6 +128,7 @@ export const createUser = catchController(
       role,
       avatar,
     });
+
     // save the user
     await user.save();
     // Create OTP using createOTP method
