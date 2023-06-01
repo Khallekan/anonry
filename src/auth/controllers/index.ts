@@ -136,7 +136,8 @@ export const createUser = catchController(
 
     const message = `Use this code to verify your account`;
     // send OTP to user's email
-    sendOTP(user_name, email, message, otp, link);
+    await sendOTP(user_name, email, message, otp, link);
+    // await nodemailer.createTestAccount()
 
     await user.save();
 
