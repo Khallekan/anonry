@@ -1,16 +1,101 @@
-// import { google } from 'googleapis';
+import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
+import SMTPTransport, { Options } from 'nodemailer/lib/smtp-transport';
 import path from 'path';
 import pug from 'pug';
 
-const transporter = nodemailer.createTransport({
-  service: 'hotmail',
-  auth: {
-    user: process.env.E_U,
-    pass: process.env.APP_PASS_O,
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   service: 'hotmail',
+//   auth: {
+//     user: process.env.E_U,
+//     pass: process.env.APP_PASS_O,
+//   },
+//   secure: false,
+// });
+
+const createTransporter = async () => {
+  const OAuth2 = google.auth.OAuth2;
+  const oauth2Client = new OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground'
+  );
+  oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN,
+  });
+
+  const accessToken: string = await new Promise((resolve, reject) => {
+    oauth2Client.getAccessToken((err, token) => {
+      if (err) {
+        console.log({ err });
+        reject('Failed to create access token');
+      }
+      resolve(token as string);
+    });
+  });
+
+  const config: Options = {
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.EMAIL,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      accessToken,
+    },
+    port: 25,
+    secure: false,
+    tls: {
+      rejectUnauthorized: false,
+    },
+  };
+
+  return nodemailer.createTransport({ ...config });
+};
+
 const emailPath = '../../emailViews/';
+
+/*
+  private async setTransport() {
+    const OAuth2 = google.auth.OAuth2;
+    const oauth2Client = new OAuth2(
+      this.configService.get('CLIENT_ID'),
+      this.configService.get('CLIENT_SECRET'),
+      'https://developers.google.com/oauthplayground',
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: process.env.REFRESH_TOKEN,
+    });
+
+    const accessToken: string = await new Promise((resolve, reject) => {
+      oauth2Client.getAccessToken((err, token) => {
+        if (err) {
+          reject('Failed to create access token');
+        }
+        resolve(token as string);
+      });
+    });
+
+    const config: Options = {
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: this.configService.get('EMAIL'),
+        clientId: this.configService.get('CLIENT_ID'),
+        clientSecret: this.configService.get('CLIENT_SECRET'),
+        accessToken,
+      },
+      port: 25,
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    };
+
+    this.mailService.addTransporter('gmail', config);
+  }
+*/
 
 export const sendOTP = async (
   user_name: string,
@@ -19,6 +104,9 @@ export const sendOTP = async (
   otp: string,
   link: string
 ) => {
+  const transporter: Promise<
+    nodemailer.Transporter<SMTPTransport.SentMessageInfo>
+  > = createTransporter();
   try {
     const html = pug.renderFile(
       path.join(__dirname, emailPath, 'verifyEmail.pug'),
@@ -37,7 +125,7 @@ export const sendOTP = async (
       to: email,
       html,
     };
-    await transporter.sendMail(mailOptions);
+    (await transporter).sendMail(mailOptions);
   } catch (error) {
     console.error(error);
   }
@@ -50,6 +138,9 @@ export const sendPasswordResetLink = async (
   otp: string,
   link: string
 ) => {
+  const transporter: Promise<
+    nodemailer.Transporter<SMTPTransport.SentMessageInfo>
+  > = createTransporter();
   try {
     const html = pug.renderFile(
       path.join(__dirname, emailPath, 'passwordReset.pug'),
@@ -67,7 +158,9 @@ export const sendPasswordResetLink = async (
       to: email,
       html,
     };
-    await transporter.sendMail(mailOptions);
+
+    (await transporter).sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error(error);
   }
@@ -78,6 +171,9 @@ export const sendPasswordChanged = async (
   email: string,
   message: string
 ) => {
+  const transporter: Promise<
+    nodemailer.Transporter<SMTPTransport.SentMessageInfo>
+  > = createTransporter();
   try {
     const html = pug.renderFile(
       path.join(__dirname, emailPath, 'passwordChanged.pug'),
@@ -93,7 +189,7 @@ export const sendPasswordChanged = async (
       to: email,
       html,
     };
-    await transporter.sendMail(mailOptions);
+    (await transporter).sendMail(mailOptions);
   } catch (error) {
     console.error(error);
   }
@@ -104,6 +200,9 @@ export const sendLoginEmail = async (
   email: string,
   message: string
 ) => {
+  const transporter: Promise<
+    nodemailer.Transporter<SMTPTransport.SentMessageInfo>
+  > = createTransporter();
   console.log('sendLoginEmail');
   try {
     const html = pug.renderFile(
@@ -122,7 +221,7 @@ export const sendLoginEmail = async (
     };
 
     // console.log({ mailOptions });
-    await transporter.sendMail(mailOptions);
+    (await transporter).sendMail(mailOptions);
   } catch (error) {
     console.error(error);
   }
